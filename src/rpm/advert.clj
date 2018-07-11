@@ -19,7 +19,7 @@
 ;; operates on single entity
 
 (defn make
-  [label & {:keys [limits start-date end-date rule] :as m, :or {limits {:global 0}}}]
+  [label & {:keys [limits start end rule] :as m, :or {limits {:global 0}}}]
   (merge {:label label} m))
 
 (defn edit [ad]
@@ -39,21 +39,18 @@
                   (update-in [:count] inc))))
   elem)
 
-(defn destroy [label]
-  (destroy-by :label label))
-
 (defn live?
   "does not differentiate if ad has expired or yet to become live"
   [x]
   (let [now (java-time.local/local-date-time)]
     (and
-     (java-time.core/after?  now (:start-date x))
-     (java-time.core/before? now (:end-date x)))))
+     (java-time.core/after?  now (:start x))
+     (java-time.core/before? now (:end x)))))
 
 (defn expired?
   "is current date past the end-date"
   [x]
-  (java-time.core/after? (java-time.local/local-date-time) (:end-date x)))
+  (java-time.core/after? (java-time.local/local-date-time) (:end x)))
 
 ;; operates on coll
 
@@ -81,6 +78,9 @@
                    (update-in [:coll] #(remove (fn [row] (= (attr row) value)) %1))
                    (update-in [:count] dec))))
       true)))
+
+(defn destroy [label]
+  (destroy-by :label label))
 
 (defn destroy-all []
   (reset! db {:coll '() :count 0}))

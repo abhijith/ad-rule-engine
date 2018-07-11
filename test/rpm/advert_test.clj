@@ -72,32 +72,32 @@
 
 (deftest test-live?
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
-        live {:start-date yest :end-date tom}
-        not-live {:start-date tom :end-date aft-tom}]
+        live {:start yest :end tom}
+        not-live {:start tom :end aft-tom}]
     (testing "live?"
       (is true? (rpm.advert/live? live))
       (is false? (rpm.advert/live? not-live)))))
 
 (deftest test-expired?
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
-        expired {:start-date bef-yest :end-date yest}
-        not-expired {:start-date bef-yest :end-date tom}]
+        expired {:start bef-yest :end yest}
+        not-expired {:start bef-yest :end tom}]
     (testing "expired?"
       (is true? (rpm.advert/expired? expired))
       (is false? (rpm.advert/expired? not-expired)))))
 
 (deftest test-live
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
-        expired {:start-date bef-yest :end-date yest}
-        not-expired {:start-date bef-yest :end-date tom}
-        live (rpm.advert/save (rpm.advert/make "a-1" :start-date yest :end-date tom))
-        not-live (rpm.advert/save (rpm.advert/make "a-2" :start-date tom :end-date aft-tom))]
+        expired {:start bef-yest :end yest}
+        not-expired {:start bef-yest :end tom}
+        live (rpm.advert/save (rpm.advert/make "a-1" :start yest :end tom))
+        not-live (rpm.advert/save (rpm.advert/make "a-2" :start tom :end aft-tom))]
     (testing "live"
       (is (= 1 (count (rpm.advert/live)))))))
 
 (deftest test-expired
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
-        expired (rpm.advert/save (rpm.advert/make "a-1" :start-date bef-yest :end-date yest))
-        not-expired (rpm.advert/save (rpm.advert/make "a-2" :start-date yest :end-date aft-tom))]
+        expired (rpm.advert/save (rpm.advert/make "a-1" :start bef-yest :end yest))
+        not-expired (rpm.advert/save (rpm.advert/make "a-2" :start yest :end aft-tom))]
     (testing "expired"
       (is (= 1 (count (rpm.advert/expired)))))))
