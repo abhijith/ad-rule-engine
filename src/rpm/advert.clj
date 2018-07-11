@@ -4,10 +4,10 @@
 ;; {:label "ktm"
 ;;          :start "jul 1"
 ;;          :end "jul 7"
-;;          :limits {:country {"germany" 10, "india" 100}
-;;                   :channel {"team-bhp.com" 100,
-;;                             "ktm.com" 10
-;;                             :global 200 }}
+;;          :limits {:country {"germany" {:lim 10 :view 20 } , "india" {:lim 100 :view 10 }}
+;;                   :channel {"team-bhp.com" {:lim 10 :view 20 },
+;;                             "ktm.com" {:lim 10 :view 20 }
+;;                             :global {:lim 100 :view 20 } }}
 ;;          :rule '(or (member country ["india", "germany"])
 ;;                            (= language "english")
 ;;                            (in categories ["bike", "car"]))}
