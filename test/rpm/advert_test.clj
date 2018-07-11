@@ -4,58 +4,58 @@
 
 (use-fixtures :each (fn [f] (f) (rpm.advert/destroy-all)))
 
-(deftest make-test
+(deftest test-make
   (let [a (rpm.advert/make "a-1")]
     (testing "make"
       (is (= {:label "a-1"} a)))))
 
-(deftest empty-test
+(deftest test-empty
   (let [a (rpm.advert/empty)]
     (testing "empty"
       (is (= {:coll [] :count 0} a)))))
 
-(deftest table-test
+(deftest test-table
   (let [a (rpm.advert/table)]
     (testing "table"
       (is (= {:coll [] :count 0} a)))))
 
-(deftest rows-test
+(deftest test-rows
   (let [a (rpm.advert/rows)]
     (testing "rows"
       (is (= [] a)))))
 
-(deftest all-test
+(deftest test-all
   (let [a (rpm.advert/all)]
     (testing "all"
       (is (= [] a)))))
 
-(deftest save-test
+(deftest test-save
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "save"
       (is (= {:label "a-1"} a)))))
 
-(deftest find-by-test
+(deftest test-find-by
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "find-by"
       (is (= a (rpm.advert/find-by :label "a-1"))))))
 
-(deftest find-test
+(deftest test-find
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "find-by"
       (is (= a (rpm.advert/find "a-1"))))))
 
-(deftest count-test
+(deftest test-count
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "count"
       (is (= 1 (rpm.advert/count))))))
 
-(deftest destroy-by-test
+(deftest test-destroy-by
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "destroy-by"
       (is (= true (rpm.advert/destroy-by :label "a-1")))
       (is (= [] (rpm.advert/rows))))))
 
-(deftest destroy-test
+(deftest test-destroy
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "destroy"
       (is (true? (rpm.advert/destroy "a-1")))
@@ -65,39 +65,39 @@
 (defn sample-days []
   (let [now (java-time.local/local-date-time)]
     {:now now
-     :yesterday (java-time.core/minus now (java-time.amount/days 1))
-     :tomorrow (java-time.core/plus now (java-time.amount/days 1))
-     :day-before-yest (java-time.core/minus now (java-time.amount/days 2))
-     :day-after-tomorrow (java-time.core/plus now (java-time.amount/days 2))}))
+     :yest (java-time.core/minus now (java-time.amount/days 1))
+     :tom (java-time.core/plus now (java-time.amount/days 1))
+     :bef-yest (java-time.core/minus now (java-time.amount/days 2))
+     :aft-tom (java-time.core/plus now (java-time.amount/days 2))}))
 
-(deftest live?-test
-  (let [{:keys [now yesterday tomorrow day-before-yest day-after-tomorrow]} (sample-days)
-        live {:start-date yesterday :end-date tomorrow}
-        not-live {:start-date tomorrow :end-date day-after-tomorrow}]
+(deftest test-live?
+  (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
+        live {:start-date yest :end-date tom}
+        not-live {:start-date tom :end-date aft-tom}]
     (testing "live?"
       (is true? (rpm.advert/live? live))
       (is false? (rpm.advert/live? not-live)))))
 
-(deftest expired?-test
-  (let [{:keys [now yesterday tomorrow day-before-yest day-after-tomorrow]} (sample-days)
-        expired {:start-date day-before-yest :end-date yesterday}
-        not-expired {:start-date day-before-yest :end-date tomorrow}]
+(deftest test-expired?
+  (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
+        expired {:start-date bef-yest :end-date yest}
+        not-expired {:start-date bef-yest :end-date tom}]
     (testing "expired?"
       (is true? (rpm.advert/expired? expired))
       (is false? (rpm.advert/expired? not-expired)))))
 
-(deftest live-test
-  (let [{:keys [now yesterday tomorrow day-before-yest day-after-tomorrow]} (sample-days)
-        expired {:start-date day-before-yest :end-date yesterday}
-        not-expired {:start-date day-before-yest :end-date tomorrow}
-        live (rpm.advert/save (rpm.advert/make "a-1" :start-date yesterday :end-date tomorrow))
-        not-live (rpm.advert/save (rpm.advert/make "a-2" :start-date tomorrow :end-date day-after-tomorrow))]
+(deftest test-live
+  (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
+        expired {:start-date bef-yest :end-date yest}
+        not-expired {:start-date bef-yest :end-date tom}
+        live (rpm.advert/save (rpm.advert/make "a-1" :start-date yest :end-date tom))
+        not-live (rpm.advert/save (rpm.advert/make "a-2" :start-date tom :end-date aft-tom))]
     (testing "live"
       (is (= 1 (count (rpm.advert/live)))))))
 
-(deftest expired-test
-  (let [{:keys [now yesterday tomorrow day-before-yest day-after-tomorrow]} (sample-days)
-        expired (rpm.advert/save (rpm.advert/make "a-1" :start-date day-before-yest :end-date yesterday))
-        not-expired (rpm.advert/save (rpm.advert/make "a-2" :start-date yesterday :end-date day-after-tomorrow))]
+(deftest test-expired
+  (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
+        expired (rpm.advert/save (rpm.advert/make "a-1" :start-date bef-yest :end-date yest))
+        not-expired (rpm.advert/save (rpm.advert/make "a-2" :start-date yest :end-date aft-tom))]
     (testing "expired"
       (is (= 1 (count (rpm.advert/expired)))))))
