@@ -36,7 +36,28 @@
   (let [{:keys [channel country language categories]} env]
     (with-bindings (bind env) (eval rule))))
 
-;; complete flow
+;;;;;;;; Match flow
+
+;; request comes in
+;; - extract channel from request
+;; - lookup channel in db
+;;   => not-found -> return 404
+;;   => found
+;;      -> extract categories and assoc to req
+;;      -> get live ads
+;;      -> filter by limits (exhausted?)
+;;      => available-ads
+;;         evaluate constraints with categories, country, language filled in:
+;;          return the first ad found / based on ranking (inverse document frequency) + increment views (global and other limits)
+;;          return []
+
+;;; ranking strategies:
+;; ad-class => platinum | gold | silver | bronze
+;; maximum matches (IDF)
+;; expr weightage => (and expr weight) => (and (isa? ::ktm ::bike) 10)
+;; closest to expiry | exhaustion
+;; high hit frequency
+
 (defn run [req]
   (let [{:keys [channel country language]} req]
     (if-let [ch (rpm.channel/find channel)]
