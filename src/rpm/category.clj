@@ -1,37 +1,47 @@
-(ns rpm.category
-  (:require [rpm.lib])
-  (:gen-class))
+(ns rpm.category)
 
-;; {:label "team-bhp.com" :categories ["bike", "motosport", "ktm"]}
+(def db (atom {:coll '() :count 0}))
 
-(defn make [label categories & parent-id])
+(defn make [label & parent]
+  {:label label :parent nil})
 
-(defn empty [] {:coll [] :count 0})
+(defn table [] (deref db))
 
-(defn table [] (rpm.lib/table :category))
+(defn rows [] (:coll (deref db)))
 
-(defn rows [] (rpm.lib/rows :category))
+(def all rows)
 
-(defn all [] (rpm.lib/all :category))
+(defn empty [] {:coll '() :count 0})
 
-(defn count [] (rpm.lib/count :category))
+(defn count [] (:count (deref db)))
 
-(defn find [label] (rpm.lib/find :category label))
+(defn find [label] (first (filter (fn [ad] (= (:label ad) label)) (all))))
 
-(defn find-by [attr value] (rpm.lib/find-by :category attr value))
+(defn find-by [attr value]
+  (first (filter (fn [x] (= (attr x) value)) (rows))))
 
-(defn destroy-all [] (rpm.lib/destroy-all :category))
+(defn destroy-all []
+  (reset! db {:coll '() :count 0}))
 
-(defn save [elem] (rpm.lib/save :category elem))
+(defn save [elem]
+  (swap! db (fn [a]
+              (-> a
+                  (update-in [:coll] conj elem)
+                  (update-in [:count] inc))))
+  elem)
 
-(defn destroy-by [attr value] (rpm.lib/destroy-by :category attr value))
+(defn destroy-by [attr value]
+  (if-let [elem (find-by attr value)]
+    (do
+      (swap! db
+             (fn [a]
+               (-> a
+                   (update-in [:coll]
+                              (fn [rows]
+                                (into [] (remove (fn [row] (= (attr row) value)) rows))))
+                   (update-in [:count] dec))))
+      true)))
 
-(defn destroy [label] (rpm.lib/destroy :category label))
 
-(defn make [label & parent-id])
-(defn parent [x])
-(defn children [x])
-(defn ancestors [x])
-(defn descendants [x])
-(defn ancestor? [x y])
-(defn add-child [x y])
+(defn destroy [label]
+  (destroy-by :label label))

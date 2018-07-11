@@ -7,13 +7,13 @@
 
 (do
   (doseq [x (range 1 4)]
-    (advert/save {:id x :label (format "advert-%s" x)}))
+    (advert/save {:label (format "advert-%s" x)}))
   (doseq [x (range 1 4)]
-    (category/save {:id x :label (format "category-%s" x)}))
+    (category/save {:label (format "category-%s" x)}))
   (doseq [x (range 1 4)]
-    (channel/save {:id x :label (format "channel-%s" x)}))
+    (channel/save {:label (format "channel-%s" x)}))
   (doseq [x (range 1 4)]
-    (country/save {:id x :label (format "country-%s" x)})))
+    (country/save {:label (format "country-%s" x)})))
 
 (println (deref rpm.lib/db))
 
@@ -32,9 +32,7 @@
  (channel/count)
  (country/count)]
 
-(println (deref rpm.lib/db))
 [(advert/destroy-all)
  (category/destroy-all)
  (channel/destroy-all)
  (country/destroy-all)]
-(println (deref rpm.lib/db))
