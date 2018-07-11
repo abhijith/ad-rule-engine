@@ -1,7 +1,15 @@
 (ns rpm.core
-  (:gen-class))
+  (:require [compojure.core :refer :all]
+            [org.httpkit.server :refer [run-server]])) ; httpkit is a server
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println "Hello, World!"))
+(defroutes myapp
+  (GET "/" [] "Show something")
+  (POST "/" [] "Create something")
+  (PUT "/" [] "Replace something")
+  (PATCH "/" [] "Modify Something")
+  (DELETE "/" [] "Annihilate something")
+  (OPTIONS "/" [] "Appease something")
+  (HEAD "/" [] "Preview something"))
+
+(defn -main []
+  (run-server myapp {:port 5000}))

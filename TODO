@@ -1,0 +1,339 @@
+;; -*- clojure -*-
+
+;;;; todo
+
+;; * date/time operations
+;; * http server (compojure/httpkit/pedestal)
+;; * Rethink expr representation
+;; * testing
+
+;;;; nice to haves
+;; * spec
+;; * deps
+;; * prometheus endpoint
+;; * /ready
+;; * /alive
+;; * signal handling
+;; * container
+;; * k8s
+
+;;;; design
+
+;; * A request from a channel contains only 3 fields
+;; 	- country (String)
+;; 	- channel (String)
+;; 	- language (String)
+
+;; * Categories:
+;; 	- unique
+;; 	- may be hierarchical
+;; 	- associated to channels
+
+;; * Channels
+;; 	- unique
+;; 	- may have categories associated with it
+
+;; * Adverts
+;; 	- unique
+;; 	- have constraints associated with them.
+;; 	- have a global view limit
+;; 	- have a start and end date
+;; 	- may have country or channel specific limits
+
+;; * Rules / Constraints
+;; 	- can be either simple expressions which evaluate to true | false
+;; 	- combined using either conjunctions or dis-junctions.
+
+;; * API
+;; 	- returns an advertisement or null given a match request
+;; 	- returns an advertisement given an advertisement id
+
+;; * On an average of 40 to 50 advertisements can be live at any point
+
+;;;; ideas
+
+(def req {:channel "team-bhp.com" :country "india" :language "english"})
+
+;; (and (= "team-bhp.com" channel)
+;;      (or (= "english" lang)
+;;          (= "india" country)))
+
+(def rule {:cond 'clojure.core/and,
+           :group [{:expr {:operator = :value "team-bhp.com" :field :channel}},
+                   {:cond 'clojure.core/or
+                    :group [{:expr {:operator = :value "english" :field :language}},
+                            {:expr {:operator = :value "india" :field :country}}]}]})
+
+(def r1 {:cond 'clojure.core/and,
+         :group [{:expr {:operator 'clojure.core/= :value "team-bhp.com" :field :channel}},
+                 {:cond 'clojure.core/or
+                  :group [{:expr {:operator 'clojure.core/= :value "english" :field :language}},
+                          {:expr {:operator 'clojure.core/= :value "india" :field :country}}]}]})
+
+(def r2 {:cond 'clojure.core/and,
+         :group [{:expr {:operator 'clojure.core/= :value "team-bhp.com" :field :channel}}
+                 {:expr {:operator 'clojure.core/= :value "india" :field :country}}
+                 ]})
+
+(defn eval-expr [expr m]
+  (println "eval-expr:" expr)
+  (when expr
+    ((find-var (:operator expr)) (:value expr) ((:field expr) m))))
+
+(defn foo [m expr]
+  (println expr)
+  (read-line)
+  (println (:group expr))
+  (if-let [exprs (:group expr)]
+    (every? (if (= (:cond expr) 'clojure.core/or) 'clojure.core/or 'clojure.core/or) (map (fn [e] (foo m (:expr e))) exprs))
+    (eval-expr expr m)))
+
+; (foo req r1)
+
+(def ad {:label "ktm"
+         :start "jul 1"
+         :end "jul 7"
+         :limits {:country {"germany" 10, "india" 100},
+                  :channel {"team-bhp.com" 100,
+                            "ktm.com" 10,
+                            :global 200 }}
+         :constraints rule})
+
+(def ch {:label "team-bhp.com" :categories ["bike", "motosport", "ktm"]})
+
+;; (defn satisfies? [m expr]
+;;   (let [{:keys [operator value field]} expr]
+;;     ((find-var (:operator expr)) (:value expr) ((:field expr) m))))
+
+;; (rpm.expr/satisfies?
+;;  {:channel "team-bhp.com", :country "india", :language "english"}
+;;  {:operator 'clojure.core/=, :field :country, :value "india"})
+
+;; request comes in
+
+;; - extract channel from request
+;; - lookup channel in db
+;; not-found -> return
+;; found -> extract categories
+;;       -> get live ads
+;;          evaluate constraints with categories, country, language filled in
+;;          return the first ad found
+;;          return []
+
+(def ^:dynamic channel nil)
+(def ^:dynamic country nil)
+(def ^:dynamic lang nil)
+
+(binding [channel "team-bhp.com" country "india" lang "english"]
+  (and (= "team-bhp.com" channel)
+       (or (= "english" lang)
+           (= "india" country))))
+
+(def expr '(and (= "team-bhp.com" channel) (or (= "english" lang) (= "india" country))))
+
+(binding [channel "team-bhp.com" country "india" lang "english"]
+  (eval expr))
+
+(let [binds {#'channel "team-bhp.com" #'country "india" #'lang "english"}]
+  (with-bindings binds
+    (and (= "team-bhp.com" channel)
+         (or (= "english" lang)
+             (= "india" country)))))
+
+(let [binds {#'channel "team-bhp.com" #'country "india" #'lang "english"}]
+  (with-bindings binds (eval expr)))
+
+(let [binds {#'channel "team-bhp.com" #'country "india" #'lang "english"}]
+  (with-bindings binds (eval expr)))
+
+;;; multi-method ideation
+
+;; rpm.state
+;; (def db (atom {:advert   {:coll [] :count 0}
+;;                :category {:coll [] :count 0}
+;;                :channel  {:coll [] :count 0}
+;;                :country  {:coll [] :count 0}}))
+;; rpm.lib
+;; (defn table [type]
+;;   ((deref rpm.state/db) type))
+
+;; in rpm.advert
+;; (defn table [] (rpm.lib/table :advert))
+
+;; in rpm.country
+;; (defn table [] (rpm.lib/table :country))
+
+;;; alternatively
+
+(defmulti table identity)
+
+(defmethod table :rpm/advert [x] {:advert []})
+
+(defmethod table :rpm/country [x] {:country []})
+
+(table :rpm/advert)
+(table :rpm/country)
+
+;; types
+
+(defrecord Advert [a b c])
+(defrecord Country [a b])
+(defmulti table type)
+
+(defmethod table rpm.core.Advert [x] {:advert []})
+(defmethod table rpm.core.Country [x] {:country []})
+
+(table rpm.core.Advert)
+(table rpm.core.Country)
+
+;; complete flow
+(def rule '(and (or (= language "english")
+                    (= language "kannada"))
+                (contains? categories "bikes")
+                (= country "india")
+                (= channel "team-bhp.com")))
+
+(def ad (rpm.advert/make "ktm" :constraints rule))
+
+(def ch {:label "team-bhp.com" :categories #{"bikes", "cars"}})
+
+(def env {:channel "team-bhp.com" :country "india" :language "english" :categories (:categories ch)})
+
+(def ^:dynamic channel nil)
+(def ^:dynamic country nil)
+(def ^:dynamic language nil)
+(def ^:dynamic categories #{})
+;; replaced by =>
+;; (map (fn [v] (intern ^{:dynamic true} :rpm.core v nil)) ['channel 'country 'language 'categories])
+
+(defn qualifies? [env rule]
+  (let [{:keys [channel country language categories]} env
+        bindings {#'channel channel
+                  #'country country
+                  #'language language
+                  #'categories categories}]
+    (with-bindings bindings (eval rule))))
+
+(defn bs [m]
+  {#'channel (:channel m)
+   #'country (:country m)
+   #'language (:language m)
+   #'categories (:categories m)})
+
+(defn raju [rule bindings]
+  (with-bindings bindings (eval rule)))
+
+(raju rule (bs env))
+
+(qualifies? env rule)
+
+(def req {:channel "team-bhp.com" :country "india" :language "english"})
+
+(defn flow [req]
+  (let [channel (:channel req)
+        categories (:categories ch)
+        rule (:constraints ad)]
+    (println [channel categories rule (assoc req :categories categories)])
+    (qualifies? (assoc req :categories categories) rule)))
+
+(flow req)
+
+(defmacro infix
+  [infixed]
+  (list (second infixed) (first infixed) (last infixed)))
+
+(defmacro infix2
+  [[operand1 operator operand2]]
+  (list operator operand1 operand2))
+
+(infix (1 + 2))
+(infix2 (1 + 2))
+
+(defmacro my-print
+  [expression]
+  (list 'let ['result expression]
+        (list 'println 'result)
+        'result))
+
+(my-print 1)
+
+(defmacro wen
+  "Evaluates test. If logical true, evaluates body in an implicit do."
+  {:added "1.0"}
+  [test & body]
+  (list 'if test (cons 'do body)))
+
+(defmacro foo [a]
+  `(let [a# ~a]
+     (+ 1 a#)))
+
+(foo (+ 100 1))
+
+(list '+ 1 (inc 1))
+`(+ 1 ~(inc 1))
+
+(defmacro code-critic
+  [bad good]
+  (list 'do
+        (list 'println
+              "Great squid of Madrid, this is bad code:"
+              (list 'quote bad))
+        (list 'println
+              "Sweet gorilla of Manila, this is good code:"
+              (list 'quote good))))
+
+(code-critic (1 + 1) (+ 1 1))
+
+(defmacro code-critic
+  [bad good]
+  `(do
+     (println "Great squid of Madrid, this is bad code:" (quote bad))
+     (println "Sweet gorilla of Manila, this is good code:" (quote good))))
+
+(code-critic (1 + 1) (+ 1 1))
+
+(defn criticize-code [criticism code]
+  `(println ~criticism (quote bad)))
+
+(defmacro code-critic
+  [bad good]
+  `(do
+     ~(criticize-code "Great squid of Madrid, this is bad code:" bad)
+     ~(criticize-code "Sweet gorilla of Manila, this is good code:" good)))
+
+(code-critic (1 + 1) (+ 1 1))
+
+`(+ ~(list 1 2 3))
+
+`(+ ~@(list 1 2 3))
+
+(defmacro code-critic
+  [bad# good#]
+  `(do ~@(map #(apply criticize-code %)
+             [["Great squid of Madrid, this is bad code:" bad#]
+              ["Sweet gorilla of Manila, this is good code:" good#]])))
+
+(code-critic (1 + 1) (+ 1 1))
+
+(def message "Good job!")
+
+(defmacro with-mischief
+  [& stuff-to-do]
+  (concat (list 'let ['message "Oh, big deal!"])
+          stuff-to-do))
+
+(with-mischief
+  (println "Here's how I feel about that thing you did: " message))
+
+(defmacro with-mischief
+  [& stuff-to-do]
+  `(let [message# "Oh, big deal!"]
+     ~@stuff-to-do))
+
+(with-mischief
+  (println "Here's how I feel about that thing you did: " message))
+
+(defmacro cool [& body]
+  `(do ~@body))
+
+(cool (println :a))
