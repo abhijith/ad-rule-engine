@@ -55,12 +55,9 @@
       (swap! db
              (fn [a]
                (-> a
-                   (update-in [:coll]
-                              (fn [rows]
-                                (into [] (remove (fn [row] (= (attr row) value)) rows))))
+                   (update-in [:coll] #(remove (fn [row] (= (attr row) value)) %1))
                    (update-in [:count] dec))))
       true)))
-
 
 (defn destroy [label]
   (destroy-by :label label))
