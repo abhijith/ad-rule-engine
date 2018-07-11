@@ -1,6 +1,5 @@
 (ns rpm.advert
-  (:require [rpm.lib]
-            [java-time]))
+  (:require [java-time]))
 
 ;; {:label "ktm"
 ;;          :start "jul 1"
@@ -9,37 +8,56 @@
 ;;                   :channel {"team-bhp.com" 100,
 ;;                             "ktm.com" 10
 ;;                             :global 200 }}
-;;          :constraints '(or (member country ["india", "germany"])
+;;          :rule '(or (member country ["india", "germany"])
 ;;                            (= language "english")
 ;;                            (in categories ["bike", "car"]))}
 
 (def db (atom {:coll '() :count 0}))
 
 (defn make
-  [label & {:keys [limit start-date end-date constraints] :as m, :or {limit 1}}]
+  [label & {:keys [limit start-date end-date rule] :as m, :or {limit 1}}]
   (merge {:label label} m))
 
-(defn empty [] {:coll [] :count 0})
+(defn table [] (deref db))
 
-(defn table [] @db)
-
-(defn rows [] (:coll @db))
+(defn rows [] (:coll (deref db)))
 
 (def all rows)
 
-(defn count [] (:count @db))
+(defn empty [] {:coll '() :count 0})
 
-(defn find [label] (first (filter #(partial = (:label %1)) @db)
+(defn count [] (:count (deref db)))
 
-(defn find-by [attr value] (rpm.lib/find-by attr value))
+(defn find [label] (first (filter (fn [ad] (= (:label ad) label)) (all))))
 
-(defn destroy-all [] (rpm.lib/destroy-all))
+(defn find-by [attr value]
+  (first (filter (fn [x] (= (attr x) value)) (rows))))
 
-(defn save [elem] (rpm.lib/save elem))
+(defn destroy-all []
+  (reset! db {:coll '() :count 0}))
 
-(defn destroy-by [attr value] (rpm.lib/destroy-by attr value))
+(defn save [elem]
+  (swap! db (fn [a]
+              (-> a
+                  (update-in [:coll] conj elem)
+                  (update-in [:count] inc))))
+  elem)
 
-(defn destroy [label] (rpm.lib/destroy label))
+(defn destroy-by [attr value]
+  (if-let [elem (find-by attr value)]
+    (do
+      (swap! db
+             (fn [a]
+               (-> a
+                   (update-in [:coll]
+                              (fn [rows]
+                                (into [] (remove (fn [row] (= (attr row) value)) rows))))
+                   (update-in [:count] dec))))
+      true)))
+
+
+(defn destroy [label]
+  (destroy-by :label label))
 
 (defn live?
   "does not differentiate if ad has expired or yet to become live"

@@ -1,9 +1,8 @@
 (ns rpm.advert-test
   (:require [clojure.test :refer :all]
-            [rpm.advert]
-            [rpm.lib]))
+            [rpm.advert]))
 
-(use-fixtures :each (fn [f] (f) (rpm.state/reset-db)))
+(use-fixtures :each (fn [f] (f) (rpm.advert/destroy-all)))
 
 (deftest make-test
   (let [a (rpm.advert/make "a-1")]
