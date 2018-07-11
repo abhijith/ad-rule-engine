@@ -26,7 +26,7 @@
   "find ad and update attrs"
   :edit)
 
-(defn set-limit [ad limits] (swap! db update-in (fn [a] (assoc ad :limits limits))
+(defn set-limits [ad limits] (swap! db assoc :limits limits))
 
 (defn limits [ad] (:limits ad))
 
@@ -38,16 +38,6 @@
                   (update-in [:coll] conj elem)
                   (update-in [:count] inc))))
   elem)
-
-(defn destroy-by [attr value]
-  (if-let [elem (find-by attr value)]
-    (do
-      (swap! db
-             (fn [a]
-               (-> a
-                   (update-in [:coll] #(remove (fn [row] (= (attr row) value)) %1))
-                   (update-in [:count] dec))))
-      true)))
 
 (defn destroy [label]
   (destroy-by :label label))
@@ -81,6 +71,16 @@
 
 (defn find-by [attr value]
   (first (filter (fn [x] (= (attr x) value)) (rows))))
+
+(defn destroy-by [attr value]
+  (if-let [elem (find-by attr value)]
+    (do
+      (swap! db
+             (fn [a]
+               (-> a
+                   (update-in [:coll] #(remove (fn [row] (= (attr row) value)) %1))
+                   (update-in [:count] dec))))
+      true)))
 
 (defn destroy-all []
   (reset! db {:coll '() :count 0}))
