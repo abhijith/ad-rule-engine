@@ -15,7 +15,7 @@
 (def db (atom {:coll '() :count 0}))
 
 (defn make
-  [label & {:keys [limit start-date end-date rule] :as m, :or {limit 1}}]
+  [label & {:keys [limit start-date end-date rule] :as m, :or {limits {:global 0}}}]
   (merge {:label label} m))
 
 (defn set-limit [ad limits] (assoc ad :limits limits))
