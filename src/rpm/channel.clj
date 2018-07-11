@@ -1,41 +1,48 @@
-(ns rpm.channel
-  (:require [rpm.lib])
-  (:gen-class))
+(ns rpm.channel)
+
+(def db (atom {:coll '() :count 0}))
 
 (defn make
-  [label & {:keys [limit start-date end-date constraints] :as m, :or {limit 1}}]
-  (merge {:label label} m))
+  [label & {categories :categories :or {categories #{} }}]
+  {:label label :categories categories})
 
-(defn empty
-  []
-  {:coll [] :count 0})
+(defn table [] (deref db))
 
-(defn table []
-  (rpm.lib/table :channel))
+(defn rows [] (:coll (deref db)))
 
-(defn rows []
-  (rpm.lib/rows :channel))
+(def all rows)
 
-(defn all []
-  (rpm.lib/all :channel))
+(defn empty [] {:coll '() :count 0})
 
-(defn count []
-  (rpm.lib/count :channel))
+(defn count [] (:count (deref db)))
 
-(defn find [label]
-  (rpm.lib/find :channel label))
+(defn find [label] (first (filter (fn [ad] (= (:label ad) label)) (all))))
 
 (defn find-by [attr value]
-  (rpm.lib/find-by :channel attr value))
+  (first (filter (fn [x] (= (attr x) value)) (rows))))
 
 (defn destroy-all []
-  (rpm.lib/destroy-all :channel))
+  (reset! db {:coll '() :count 0}))
 
 (defn save [elem]
-  (rpm.lib/save :channel elem))
+  (swap! db (fn [a]
+              (-> a
+                  (update-in [:coll] conj elem)
+                  (update-in [:count] inc))))
+  elem)
 
 (defn destroy-by [attr value]
-  (rpm.lib/destroy-by :channel attr value))
+  (if-let [elem (find-by attr value)]
+    (do
+      (swap! db
+             (fn [a]
+               (-> a
+                   (update-in [:coll]
+                              (fn [rows]
+                                (into [] (remove (fn [row] (= (attr row) value)) rows))))
+                   (update-in [:count] dec))))
+      true)))
+
 
 (defn destroy [label]
-  (rpm.lib/destroy :channel label))
+  (destroy-by :label label))
