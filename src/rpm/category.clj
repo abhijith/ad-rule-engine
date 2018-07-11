@@ -5,6 +5,8 @@
 (defn make [label & parent]
   {:label label :parent nil})
 
+(defn edit [e] :edit)
+
 (defn table [] (deref db))
 
 (defn rows [] (:coll (deref db)))

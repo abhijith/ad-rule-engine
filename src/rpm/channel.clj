@@ -6,6 +6,8 @@
   [label & {categories :categories :or {categories #{} }}]
   {:label label :categories categories})
 
+(defn edit [e categories] :edit)
+
 (defn table [] (deref db))
 
 (defn rows [] (:coll (deref db)))

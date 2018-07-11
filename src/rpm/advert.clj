@@ -12,41 +12,25 @@
 ;;                            (= language "english")
 ;;                            (in categories ["bike", "car"]))}
 
-;; crud => create/make, read/find, update/update, remove/destroy
+;; crud => create/make, read/find, update/edit, remove/destroy
 
 (def db (atom {:coll '() :count 0}))
+
+;; operates on single entity
 
 (defn make
   [label & {:keys [limits start-date end-date rule] :as m, :or {limits {:global 0}}}]
   (merge {:label label} m))
 
-(defn update [ad]
+(defn edit [ad]
   "find ad and update attrs"
-  :update)
+  :edit)
 
 (defn set-limit [ad limits] (swap! db update-in (fn [a] (assoc ad :limits limits))
 
 (defn limits [ad] (:limits ad))
 
 (defn limit [ad type] (type (limits ad)))
-
-(defn table [] (deref db))
-
-(defn rows [] (:coll (deref db)))
-
-(def all rows)
-
-(defn empty [] {:coll '() :count 0})
-
-(defn count [] (:count (deref db)))
-
-(defn find [label] (first (filter (fn [ad] (= (:label ad) label)) (all))))
-
-(defn find-by [attr value]
-  (first (filter (fn [x] (= (attr x) value)) (rows))))
-
-(defn destroy-all []
-  (reset! db {:coll '() :count 0}))
 
 (defn save [elem]
   (swap! db (fn [a]
@@ -81,11 +65,29 @@
   [x]
   (java-time.core/after? (java-time.local/local-date-time) (:end-date x)))
 
+;; operates on coll
+
+(defn table [] (deref db))
+
+(defn rows [] (:coll (deref db)))
+
+(def all rows)
+
+(defn empty [] {:coll '() :count 0})
+
+(defn count [] (:count (deref db)))
+
+(defn find [label] (first (filter (fn [ad] (= (:label ad) label)) (all))))
+
+(defn find-by [attr value]
+  (first (filter (fn [x] (= (attr x) value)) (rows))))
+
+(defn destroy-all []
+  (reset! db {:coll '() :count 0}))
+
 (defn live [] (into [] (filter live? (all))))
 
 (defn expired [] (filter expired? (all)))
-
-(defn limits [x] (:limits x))
 
 (defn views-exceeded? [x])
 
