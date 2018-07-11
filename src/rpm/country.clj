@@ -1,37 +1,48 @@
-(ns rpm.country
-  (:require [rpm.lib])
-  (:gen-class))
+(ns rpm.country)
 
-(defn empty
-  []
-  {:coll [] :count 0})
+(def db (atom {:coll '() :count 0}))
 
-(defn table []
-  (rpm.lib/table :country))
+(defn make
+  [label]
+  {:label label})
 
-(defn rows []
-  (rpm.lib/rows :country))
+(defn table [] (deref db))
 
-(defn all []
-  (rpm.lib/all :country))
+(defn rows [] (:coll (deref db)))
 
-(defn count []
-  (rpm.lib/count :country))
+(def all rows)
 
-(defn find [label]
-  (rpm.lib/find :country label))
+(defn empty [] {:coll '() :count 0})
+
+(defn count [] (:count (deref db)))
+
+(defn find [label] (first (filter (fn [ad] (= (:label ad) label)) (all))))
 
 (defn find-by [attr value]
-  (rpm.lib/find-by :country attr value))
+  (first (filter (fn [x] (= (attr x) value)) (rows))))
 
 (defn destroy-all []
-  (rpm.lib/destroy-all :country))
+  (reset! db {:coll '() :count 0}))
 
 (defn save [elem]
-  (rpm.lib/save :country elem))
+  (swap! db (fn [a]
+              (-> a
+                  (update-in [:coll] conj elem)
+                  (update-in [:count] inc))))
+  elem)
 
 (defn destroy-by [attr value]
-  (rpm.lib/destroy-by :country attr value))
+  (if-let [elem (find-by attr value)]
+    (do
+      (swap! db
+             (fn [a]
+               (-> a
+                   (update-in [:coll]
+                              (fn [rows]
+                                (into [] (remove (fn [row] (= (attr row) value)) rows))))
+                   (update-in [:count] dec))))
+      true)))
+
 
 (defn destroy [label]
-  (rpm.lib/destroy :country label))
+  (destroy-by :label label))
