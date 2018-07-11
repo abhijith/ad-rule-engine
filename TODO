@@ -110,15 +110,18 @@
 ;;  {:operator 'clojure.core/=, :field :country, :value "india"})
 
 ;; request comes in
-
 ;; - extract channel from request
 ;; - lookup channel in db
 ;; not-found -> return
-;; found -> extract categories
+;; found -> extract categories and append to req
 ;;       -> get live ads
+;;          - filter by limits (exhausted?)
 ;;          evaluate constraints with categories, country, language filled in
-;;          return the first ad found
+;;          return the first ad found or based on ranking (inverse document frequency) + increment views (global and other limits)
 ;;          return []
+
+;; expr weightage
+;; (and expr weight) => (and (isa? ::ktm ::bike) 10)
 
 (def ^:dynamic channel nil)
 (def ^:dynamic country nil)
