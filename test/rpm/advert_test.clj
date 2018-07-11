@@ -12,22 +12,22 @@
 (deftest test-empty
   (let [a (rpm.advert/empty)]
     (testing "empty"
-      (is (= {:coll [] :count 0} a)))))
+      (is (= {:coll '() :count 0} a)))))
 
 (deftest test-table
   (let [a (rpm.advert/table)]
     (testing "table"
-      (is (= {:coll [] :count 0} a)))))
+      (is (= {:coll '() :count 0} a)))))
 
 (deftest test-rows
   (let [a (rpm.advert/rows)]
     (testing "rows"
-      (is (= [] a)))))
+      (is (= '() a)))))
 
 (deftest test-all
   (let [a (rpm.advert/all)]
     (testing "all"
-      (is (= [] a)))))
+      (is (= '() a)))))
 
 (deftest test-save
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
@@ -53,7 +53,7 @@
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "destroy-by"
       (is (= true (rpm.advert/destroy-by :label "a-1")))
-      (is (= [] (rpm.advert/rows))))))
+      (is (= '() (rpm.advert/rows))))))
 
 (deftest test-destroy
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
@@ -61,6 +61,11 @@
       (is (true? (rpm.advert/destroy "a-1")))
       (is (nil? (rpm.advert/destroy "a-2")))
       (is (empty? (rpm.advert/rows))))))
+
+(deftest test-destroy-all
+  (doseq [a (range 1 3)] (rpm.advert/save (rpm.advert/make (format "a-%s" a))))
+  (testing "destroy"
+    (is (= {:coll '() :count 0} (rpm.advert/destroy-all)))))
 
 (defn sample-days []
   (let [now (java-time.local/local-date-time)]
@@ -101,3 +106,23 @@
         not-expired (rpm.advert/save (rpm.advert/make "a-2" :start yest :end aft-tom))]
     (testing "expired"
       (is (= 1 (count (rpm.advert/expired)))))))
+
+(deftest test-limit-exceeded?
+  (testing "limit exceeded?"
+    (is (= false (rpm.advert/limit-exceeded? {:limit 1 :views 0})))
+    (is (= true (rpm.advert/limit-exceeded?  {:limit 1 :views 1})))))
+
+(deftest test-global-limit-exceeded?
+  (testing "limit exceeded?"
+    (is (= false (rpm.advert/global-limit-exceeded? (rpm.advert/make :a :limits {:global {:limit 1 :views 0}}))))
+    (is (= true (rpm.advert/global-limit-exceeded? (rpm.advert/make :a :limits {:global {:limit 1 :views 1}}))))))
+
+(deftest test-country-limit-exceeded?
+  (testing "limit exceeded?"
+    (is (= false (rpm.advert/country-limit-exceeded? (rpm.advert/make :a :limits {:country {:india {:limit 1 :views 0}}}) :india)))
+    (is (= true (rpm.advert/country-limit-exceeded? (rpm.advert/make :a :limits {:country {:india {:limit 1 :views 1}}}) :india)))))
+
+(deftest test-channel-limit-exceeded?
+  (testing "limit exceeded?"
+    (is (= false (rpm.advert/channel-limit-exceeded? (rpm.advert/make :a :limits {:channel {:example.com {:limit 1 :views 0}}}) :example.com)))
+    (is (= true (rpm.advert/channel-limit-exceeded? (rpm.advert/make :a :limits {:channel {:example.com {:limit 1 :views 1}}}) :example.com)))))

@@ -1,7 +1,14 @@
 (ns rpm.core-test
   (:require [clojure.test :refer :all]
-            [rpm.core :refer :all]))
+            [rpm.advert]
+            [rpm.channel]
+            [rpm.country]
+            [rpm.category]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
+(defn init []
+  (doseq [x (range 1 2)]
+    (rpm.advert/make "a-1")))
+
+(deftest run
+  (testing "run"
     (is (= 1 1))))
