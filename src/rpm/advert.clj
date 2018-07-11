@@ -19,33 +19,31 @@
   [label & {:keys [limits start end rule] :as m, :or {limits {:global {:limit 1 :views 0}}}}]
   (merge {:label label} m))
 
-(defn empty [] {:coll '() :count 0})
+(defn empty-table [] {:coll '() :count 0})
 
 (defn table [] (deref db))
 
-(defn rows [] (:coll (deref db)))
-
-(def all rows)
+(defn all [] (:coll (deref db)))
 
 (defn save
   [elem]
-  (do (swap! db #(-> %1 (update :coll conj elem) (update :count inc)))
+  (do (swap! db #(-> % (update :coll conj elem) (update :count inc)))
       elem))
 
 (defn find-by [attr value]
-  (first (filter (fn [x] (= (attr x) value)) (rows))))
+  (first (filter (fn [x] (= (attr x) value)) (all))))
 
-(defn find [label] (first (filter (fn [ad] (= (:label ad) label)) (all))))
+(defn find-entry [label] (first (filter (fn [ad] (= (:label ad) label)) (all))))
 
-(defn count [] (:count (deref db)))
+(defn get-count [] (:count (deref db)))
 
 (defn destroy-by [attr value]
-  (if-let [elem (find-by attr value)]
+  (when-let [elem (find-by attr value)]
     (do
       (swap! db
              (fn [a]
                (-> a
-                   (update :coll #(remove (fn [row] (= (attr row) value)) %1))
+                   (update :coll #(remove (fn [ad] (= (attr ad) value)) %))
                    (update :count dec))))
       true)))
 
@@ -53,7 +51,7 @@
   (destroy-by :label label))
 
 (defn destroy-all []
-  (reset! db {:coll '() :count 0}))
+  (reset! db (empty-table)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; advert attrs specific fns ;;;;
@@ -79,9 +77,9 @@
 
 (defn global-limit-exceeded? [ad] (limit-exceeded? (:global (limits ad))))
 
-(defn country-limit-exceeded? [ad country] (limit-exceeded? (get-in [:country country] (limits ad))))
+(defn country-limit-exceeded? [ad country] (limit-exceeded? (get-in (limits ad) [:country country])))
 
-(defn channel-limit-exceeded? [ad channel] (limit-exceeded? (get-in [:channel channel] (limits ad))))
+(defn channel-limit-exceeded? [ad channel] (limit-exceeded? (get-in (limits ad) [:channel channel])))
 
 (defn exhausted? [ad] (any? (map limit-exceeded? (vals (:limits ad)))))
 

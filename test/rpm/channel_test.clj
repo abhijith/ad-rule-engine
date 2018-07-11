@@ -9,8 +9,8 @@
     (testing "make"
       (is (= {:label "ch-1" :categories #{}} a)))))
 
-(deftest test-empty
-  (let [a (rpm.channel/empty)]
+(deftest test-empty-table
+  (let [a (rpm.channel/empty-table)]
     (testing "empty"
       (is (= {:coll [] :count 0} a)))))
 
@@ -18,11 +18,6 @@
   (let [a (rpm.channel/table)]
     (testing "table"
       (is (= {:coll [] :count 0} a)))))
-
-(deftest test-rows
-  (let [a (rpm.channel/rows)]
-    (testing "rows"
-      (is (= [] a)))))
 
 (deftest test-all
   (let [a (rpm.channel/all)]
@@ -39,25 +34,25 @@
     (testing "find-by"
       (is (= a (rpm.channel/find-by :label "ch-1"))))))
 
-(deftest test-find
+(deftest test-find-entry
   (let [a (rpm.channel/save (rpm.channel/make "ch-1"))]
     (testing "find-by"
-      (is (= a (rpm.channel/find "ch-1"))))))
+      (is (= a (rpm.channel/find-entry "ch-1"))))))
 
-(deftest test-count
+(deftest test-get-count
   (let [a (rpm.channel/save (rpm.channel/make "ch-1"))]
     (testing "count"
-      (is (= 1 (rpm.channel/count))))))
+      (is (= 1 (rpm.channel/get-count))))))
 
 (deftest test-destroy-by
   (let [a (rpm.channel/save (rpm.channel/make "ch-1"))]
     (testing "destroy-by"
       (is (= true (rpm.channel/destroy-by :label "ch-1")))
-      (is (= [] (rpm.channel/rows))))))
+      (is (= [] (rpm.channel/all))))))
 
 (deftest test-destroy
   (let [a (rpm.channel/save (rpm.channel/make "ch-1"))]
     (testing "destroy"
       (is (true? (rpm.channel/destroy "ch-1")))
       (is (nil? (rpm.channel/destroy "ch-2")))
-      (is (empty? (rpm.channel/rows))))))
+      (is (empty? (rpm.channel/all))))))

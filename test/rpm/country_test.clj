@@ -10,7 +10,7 @@
       (is (= {:label "country-1"} a)))))
 
 (deftest test-empty
-  (let [a (rpm.country/empty)]
+  (let [a (rpm.country/empty-table)]
     (testing "empty"
       (is (= {:coll [] :count 0} a)))))
 
@@ -18,11 +18,6 @@
   (let [a (rpm.country/table)]
     (testing "table"
       (is (= {:coll [] :count 0} a)))))
-
-(deftest test-rows
-  (let [a (rpm.country/rows)]
-    (testing "rows"
-      (is (= [] a)))))
 
 (deftest test-all
   (let [a (rpm.country/all)]
@@ -39,25 +34,25 @@
     (testing "find-by"
       (is (= a (rpm.country/find-by :label "country-1"))))))
 
-(deftest test-find
+(deftest test-find-entry
   (let [a (rpm.country/save (rpm.country/make "country-1"))]
-    (testing "find-by"
-      (is (= a (rpm.country/find "country-1"))))))
+    (testing "find-entry"
+      (is (= a (rpm.country/find-entry "country-1"))))))
 
-(deftest test-count
+(deftest test-get-count
   (let [a (rpm.country/save (rpm.country/make "country-1"))]
     (testing "count"
-      (is (= 1 (rpm.country/count))))))
+      (is (= 1 (rpm.country/get-count))))))
 
 (deftest test-destroy-by
   (let [a (rpm.country/save (rpm.country/make "country-1"))]
     (testing "destroy-by"
       (is (= true (rpm.country/destroy-by :label "country-1")))
-      (is (= [] (rpm.country/rows))))))
+      (is (= [] (rpm.country/all))))))
 
 (deftest test-destroy
   (let [a (rpm.country/save (rpm.country/make "country-1"))]
     (testing "destroy"
       (is (true? (rpm.country/destroy "country-1")))
       (is (nil? (rpm.country/destroy "country-2")))
-      (is (empty? (rpm.country/rows))))))
+      (is (empty? (rpm.country/all))))))
