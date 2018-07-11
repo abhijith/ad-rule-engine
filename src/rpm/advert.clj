@@ -18,6 +18,12 @@
   [label & {:keys [limit start-date end-date rule] :as m, :or {limit 1}}]
   (merge {:label label} m))
 
+(defn set-limit [ad limits] (assoc ad :limits limits))
+
+(defn limits [ad] (:limits ad))
+
+(defn limit [ad type] (type (limits ad)))
+
 (defn table [] (deref db))
 
 (defn rows [] (:coll (deref db)))
