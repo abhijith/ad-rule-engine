@@ -12,13 +12,19 @@
 ;;                            (= language "english")
 ;;                            (in categories ["bike", "car"]))}
 
+;; crud => create/make, read/find, update/update, remove/destroy
+
 (def db (atom {:coll '() :count 0}))
 
 (defn make
-  [label & {:keys [limit start-date end-date rule] :as m, :or {limits {:global 0}}}]
+  [label & {:keys [limits start-date end-date rule] :as m, :or {limits {:global 0}}}]
   (merge {:label label} m))
 
-(defn set-limit [ad limits] (assoc ad :limits limits))
+(defn update [ad]
+  "find ad and update attrs"
+  :update)
+
+(defn set-limit [ad limits] (swap! db update-in (fn [a] (assoc ad :limits limits))
 
 (defn limits [ad] (:limits ad))
 
