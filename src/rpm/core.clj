@@ -58,14 +58,10 @@
 ;; closest to expiry | exhaustion
 ;; high hit frequency
 
-(defn run [req]
+(defn run
+  [req]
   (let [{:keys [channel country language]} req]
     (do
       (when-let [ch (rpm.channel/find-entry channel)]
         (when-let [co (rpm.country/find-entry country)]
-          (println (assoc req :categories (:categories ch)))
           (filter (fn [ad] (qualifies? (assoc req :categories (:categories ch)) (:rule ad))) (rpm.advert/available {:channel channel :country country})))))))
-
-;; (defn run [req]
-;;   (let [{:keys [channel country language] :as m} req]
-;;     (rpm.advert/available m)))

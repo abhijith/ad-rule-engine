@@ -4,6 +4,9 @@
 
 (use-fixtures :each (fn [f] (f) (rpm.advert/destroy-all)))
 
+(defn lim [l v]
+  (assoc (rpm.advert/make-limit l) :views v))
+
 (deftest test-make
   (let [a (rpm.advert/make "a-1")]
     (testing "make"
@@ -104,74 +107,74 @@
 
 (deftest test-limit-exceeded?
   (testing "limit exceeded?"
-    (is (= false (rpm.advert/limit-exceeded? {:limit 1 :views 0})))
-    (is (= true (rpm.advert/limit-exceeded?  {:limit 1 :views 1})))))
+    (is (= false (rpm.advert/limit-exceeded? (lim 1 0))))
+    (is (= true (rpm.advert/limit-exceeded?  (lim 1 1))))))
 
 (deftest test-global-limit-exceeded?
-  (let [yes (rpm.advert/make :a :limits {:global {:limit 1 :views 1}})
-        no (rpm.advert/make :a :limits {:global {:limit 1 :views 0}})]
+  (let [yes (rpm.advert/make :a :limits {:global (lim 1 1)})
+        no (rpm.advert/make :a :limits {:global (lim 1 0)})]
     (testing "limit exceeded?"
       (is (= false (rpm.advert/global-limit-exceeded? no)))
       (is (= true  (rpm.advert/global-limit-exceeded? yes))))))
 
 (deftest test-country-limit-exceeded?
-  (let [yes (rpm.advert/make :a :limits {:country {:india {:limit 1 :views 1}}})
-        no (rpm.advert/make :a :limits {:country {:india {:limit 1 :views 0}}})]
+  (let [yes (rpm.advert/make :a :limits {:country {"india" (lim 1 1)}})
+        no (rpm.advert/make :a :limits {:country {"india" (lim 1 0)}})]
     (testing "limit exceeded?"
-      (is (= false (rpm.advert/country-limit-exceeded? no :india)))
-      (is (= true  (rpm.advert/country-limit-exceeded? yes :india))))))
+      (is (= false (rpm.advert/country-limit-exceeded? no "india")))
+      (is (= true  (rpm.advert/country-limit-exceeded? yes "india"))))))
 
 (deftest test-channel-limit-exceeded?
-  (let [yes (rpm.advert/make :a :limits {:channel {:a.com {:limit 1 :views 1}}})
-        no (rpm.advert/make :a :limits {:channel {:a.com {:limit 1 :views 0}}})]
+  (let [yes (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 1)}})
+        no (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 0)}})]
     (testing "limit exceeded?"
-      (is (= false (rpm.advert/channel-limit-exceeded? no :a.com)))
-      (is (= true  (rpm.advert/channel-limit-exceeded? yes :a.com))))))
+      (is (= false (rpm.advert/channel-limit-exceeded? no "a.com")))
+      (is (= true  (rpm.advert/channel-limit-exceeded? yes "a.com"))))))
 
 (deftest test-exhausted?
-  (let [yes (rpm.advert/make :a :limits {:channel {:a.com {:limit 1 :views 1}}
-                                         :country {:india {:limit 1 :views 1}}
-                                         :global {:limit 1 :views 1}})
-        no (rpm.advert/make :a :limits {:channel {:a.com {:limit 1 :views 0}}
-                                        :country {:india {:limit 1 :views 0}}
-                                        :global {:limit 1 :views 0}})]
-    (is (= false (rpm.advert/exhausted? no {:country :india :channel :a.com })))
-    (is (= true  (rpm.advert/exhausted? yes {:country :india :channel :a.com })))))
+  (let [yes (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 1)}
+                                         :country {"india" (lim 1 1)}
+                                         :global (lim 1 1)})
+        no (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 0)}
+                                        :country {"india" (lim 1 0)}
+                                        :global (lim 1 0) })]
+    (is (= false (rpm.advert/exhausted? no {:country "india" :channel "a.com" })))
+    (is (= true  (rpm.advert/exhausted? yes {:country "india" :channel "a.com" })))))
 
 (deftest test-exhausted
-  (let [yes (rpm.advert/save (rpm.advert/make :a :limits {:channel {:a.com {:limit 1 :views 1}}
-                                                          :country {:india {:limit 1 :views 1}}
-                                                          :global {:limit 1 :views 1}}))
-        no (rpm.advert/save (rpm.advert/make :a :limits {:channel {:a.com {:limit 1 :views 0}}
-                                                         :country {:india {:limit 1 :views 0}}
-                                                         :global {:limit 1 :views 0}}))]
+  (let [yes (rpm.advert/save (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 1)}
+                                                          :country {"india" (lim 1 1)}
+                                                          :global (lim 1 1)}))
+        no (rpm.advert/save (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 0)}
+                                                         :country {"india" (lim 1 0)}
+                                                         :global (lim 1 0)}))]
     (is (= 2 (rpm.advert/get-count)))
-    (is (= 1 (count (rpm.advert/exhausted {:country :india :channel :a.com }))))
-    (is (= 1 (count (rpm.advert/exhausted {:country :india :channel :a.com }))))))
+    (is (= 1 (count (rpm.advert/exhausted {:country "india" :channel "a.com" }))))
+    (is (= 1 (count (rpm.advert/exhausted {:country "india" :channel "a.com" }))))))
 
 (deftest test-available?
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
         yes (rpm.advert/make :a :start yest :end aft-tom
-                             :limits {:channel {:a.com {:limit 1 :views 0}}
-                                      :country {:india {:limit 1 :views 0}}
-                                      :global {:limit 1 :views 0}})
+                             :limits {:channel {"a.com" (lim 1 0)}
+                                      :country {"india" (lim 1 0) }
+                                      :global (lim 1 0)})
         no (rpm.advert/make :a :start bef-yest :end yest
-                            :limits {:channel {:a.com {:limit 1 :views 1}}
-                                     :country {:india {:limit 1 :views 1}}
-                                     :global {:limit 1 :views 1}})]
-    (is (= false (rpm.advert/available? no {:country :india :channel :a.com })))
-    (is (= true  (rpm.advert/available? yes {:country :india :channel :a.com })))))
+                            :limits {:channel {"a.com" (lim 1 1) }
+                                     :country {"india" (lim 1 1)}
+                                     :global (lim 1 1)})]
+    (is (= false (rpm.advert/available? no {:country "india" :channel "a.com" })))
+    (is (= true  (rpm.advert/available? yes {:country "india" :channel "a.com" })))))
 
 (deftest test-available
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
         yes (rpm.advert/save (rpm.advert/make :a :start yest :end aft-tom
-                                              :limits {:channel {:a.com {:limit 1 :views 0}}
-                                                       :country {:india {:limit 1 :views 0}}
-                                                       :global {:limit 1 :views 0}}))
+                                              :limits {:channel {"a.com" (lim 1 0) }
+                                                       :country {"india" (lim 1 0) }
+                                                       :global  (lim 1 0)}))
         no (rpm.advert/save (rpm.advert/make :a :start bef-yest :end yest
-                                             :limits {:channel {:a.com {:limit 1 :views 1}}
-                                                      :country {:india {:limit 1 :views 1}}
-                                                      :global {:limit 1 :views 1}}))]
+                                             :limits {:channel {"a.com" (lim 1 1)}
+                                                      :country {"india" (lim 1 1)}
+                                                      :global (lim 1 1)}))]
     (is (= 2 (rpm.advert/get-count)))
-    (is (= 1 (count (rpm.advert/available {:country :india :channel :a.com}))))
-    (is (= 1 (count (rpm.advert/available {:country :india :channel :a.com}))))))
+    (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))
+    (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))))

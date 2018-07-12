@@ -34,7 +34,7 @@
       (swap! db
              (fn [a]
                (-> a
-                   (update :coll #(remove (fn [channel] (= (attr channel) value)) %))
+                   (update :coll #(remove (constantly elem) %))
                    (update :count dec))))
       true)))
 

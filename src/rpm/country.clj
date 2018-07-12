@@ -30,7 +30,7 @@
       (swap! db
              (fn [a]
                (-> a
-                   (update :coll #(remove (fn [country] (= (attr country) value)) %))
+                   (update :coll #(remove (constantly elem) %))
                    (update :count dec))))
       true)))
 

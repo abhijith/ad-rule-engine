@@ -1,27 +1,13 @@
 (ns rpm.advert
   (:require [java-time]))
 
-;; {:label "ktm"
-;;          :start "jul 1"
-;;          :end "jul 7"
-;;          :limits {:global {:lim 10 :views 10}
-;;                   :country {"germany" {:limit 10 :view 20 }, "india" {:limit 100 :views 10} }
-;;                   :channel {"team-bhp.com" {:limit 10 :view 20},
-;;                             "ktm.com" {:limit 10 :view 20}
-;;                             :global {:limit 100 :view 20} }}
-;;          :rule '(or (member country ["india", "germany"])
-;;                            (= language "english")
-;;                            (in categories ["bike", "car"]))}
-
 (def db (atom {:coll '() :count 0}))
 
-(defn make
-  [label & {:keys [limits start end rule] :as m, :or {limits {:global {:limit 1 :views 0}}}}]
-  (merge {:label label} m))
+(defn make-limit [n] {:limit n :views 0})
 
-(defn create
-  [label & {:keys [limits start end rule] :as m, :or {limits {:global {:limit 1 :views 0}}}}]
-  (save (make label m)))
+(defn make
+  [label & {:keys [limits start end rule] :as m, :or {limits {:global (make-limit 1) :country {} :channel {} }}}]
+  (merge {:label label} m))
 
 (defn empty-table [] {:coll '() :count 0})
 
@@ -47,7 +33,7 @@
       (swap! db
              (fn [a]
                (-> a
-                   (update :coll #(remove (fn [ad] (= (attr ad) value)) %))
+                   (update :coll #(remove (constantly elem) %))
                    (update :count dec))))
       true)))
 
