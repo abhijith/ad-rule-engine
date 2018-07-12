@@ -63,5 +63,9 @@
     (do
       (when-let [ch (rpm.channel/find-entry channel)]
         (when-let [co (rpm.country/find-entry country)]
-          (when-let [cat (:categories ch)]
-            (first (filter qualifies? (rpm.advert/available)))))))))
+          (println (assoc req :categories (:categories ch)))
+          (filter (fn [ad] (qualifies? (assoc req :categories (:categories ch)) (:rule ad))) (rpm.advert/available {:channel channel :country country})))))))
+
+;; (defn run [req]
+;;   (let [{:keys [channel country language] :as m} req]
+;;     (rpm.advert/available m)))

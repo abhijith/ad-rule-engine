@@ -19,6 +19,10 @@
   [label & {:keys [limits start end rule] :as m, :or {limits {:global {:limit 1 :views 0}}}}]
   (merge {:label label} m))
 
+(defn create
+  [label & {:keys [limits start end rule] :as m, :or {limits {:global {:limit 1 :views 0}}}}]
+  (save (make label m)))
+
 (defn empty-table [] {:coll '() :count 0})
 
 (defn table [] (deref db))
