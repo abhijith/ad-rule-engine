@@ -100,5 +100,5 @@
   (filter (fn [ad] (exhausted? ad m)) (all)))
 
 (defn available
-  [ad {:keys [channel country] :as m}]
+  [{:keys [channel country] :as m}]
   (filter (fn [ad] (available? ad m)) (all)))

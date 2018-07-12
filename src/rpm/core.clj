@@ -61,11 +61,7 @@
 (defn run [req]
   (let [{:keys [channel country language]} req]
     (do
-      (when-let [ch (rpm.channel/find channel)]
-        (when-let [co (rpm.country/find country)]
+      (when-let [ch (rpm.channel/find-entry channel)]
+        (when-let [co (rpm.country/find-entry country)]
           (when-let [cat (:categories ch)]
             (first (filter qualifies? (rpm.advert/available)))))))))
-
-(defn run [req]
-  (let [{:keys [channel country language]} req]
-            (first (filter qualifies? (rpm.advert/available))))))))
