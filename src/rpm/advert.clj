@@ -59,12 +59,11 @@
 
 (defn limits [ad] (:limits ad))
 
-(defn limit [ad type] (get-in [type :lim] (limits ad)))
+(defn limit [ad type] (get-in [type :limit] (limits ad)))
 
 (defn views [ad type] (get-in [type :views] (limits ad)))
 
 (defn live?
-  "does not differentiate if ad has expired or if it is yet to be live"
   [x]
   (let [now (java-time.local/local-date-time)]
     (and
@@ -81,20 +80,25 @@
 
 (defn channel-limit-exceeded? [ad channel] (limit-exceeded? (get-in (limits ad) [:channel channel])))
 
-(defn exhausted? [ad] (any? (map limit-exceeded? (vals (:limits ad)))))
-
-(defn available? [ad] ((comp live? (complement exhausted?)) ad))
-
 (defn live [] (filter live? (all)))
 
 (defn expired [] (filter expired? (all)))
 
-(defn available [] (filter available? (all)))
+(defn exhausted?
+  [ad {:keys [channel country]}]
+  (and (global-limit-exceeded? ad)
+       (country-limit-exceeded? ad country)
+       (channel-limit-exceeded? ad channel)
+       true))
 
-(defn views-exceeded? [x])
+(defn available?
+  [ad {:keys [channel country] :as m}]
+  (and (live? ad) (not (exhausted? ad m)) true))
 
-(defn update-views [x])
+(defn exhausted
+  [{:keys [channel country] :as m}]
+  (filter (fn [ad] (exhausted? ad m)) (all)))
 
-(defn set-limits [ad limits] (swap! db assoc :limits limits))
-
-(defn edit [ad] :edit)
+(defn available
+  [ad {:keys [channel country] :as m}]
+  (filter (fn [ad] (available? ad m)) (all)))
