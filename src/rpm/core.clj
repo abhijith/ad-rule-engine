@@ -8,12 +8,7 @@
 
 (defroutes myapp
   (GET "/" [] "Show something")
-  (POST "/" [] "Create something")
-  (PUT "/" [] "Replace something")
-  (PATCH "/" [] "Modify Something")
-  (DELETE "/" [] "Annihilate something")
-  (OPTIONS "/" [] "Appease something")
-  (HEAD "/" [] "Preview something"))
+  (POST "/" [] "Create something"))
 
 ;; rename this to -main to enable
 (defn main []
@@ -35,27 +30,36 @@
   (let [{:keys [channel country language categories]} env]
     (with-bindings (bind env) (eval rule))))
 
-;;;;;;;; Match flow
+;;;; Match flow
 
-;; request comes in
 ;; - extract channel from request
-;; - lookup channel in db
+;;
+;; - lookup channel in db:
+;;
 ;;   => not-found -> return 404
+;;
 ;;   => found
-;;      -> extract categories and assoc to req
-;;      -> get live ads
-;;      -> filter by limits (exhausted?)
-;;      => available-ads
-;;         evaluate constraints with categories, country, language filled in:
-;;          return the first ad found / based on ranking (inverse document frequency) + increment views (global and other limits)
-;;          return []
+;;      - extract categories and assoc to req
+;;
+;;      - for each available-ads (live and limits not exhausted)
+;;
+;;        -> evaluate constraints with categories, country, language filled in:
+;;
+;;           => return the first ad found / based on ranking (inverse document frequency) + increment views (global and other limits)
+;;
+;;           => return nil
 
-;;; ranking strategies:
-;; ad-class => platinum | gold | silver | bronze
-;; maximum matches (IDF)
-;; expr weightage => (and expr weight) => (and (isa? ::ktm ::bike) 10)
-;; closest to expiry | exhaustion
-;; high hit frequency
+;;;; Ad-ranking strategies:
+;;
+;; - Ad-classes => platinum | gold | silver | bronze
+;;
+;; - maximum matches (IDF)
+;;
+;; - expr weightage => (and expr weight) => (and (isa? ::ktm ::bike) 10)
+;;
+;; - closest to expiry | exhaustion
+;;
+;; - high hit frequency
 
 (defn run
   [req]
