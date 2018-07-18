@@ -27,11 +27,21 @@
     (testing "all"
       (is (= '() a)))))
 
+(deftest test-save-aux
+  (let [a (rpm.advert/save-aux (rpm.advert/empty-table) (rpm.advert/make "a-1"))]
+    (testing "save"
+      (is (= {:coll '({:label "a-1"}) :count 1} a)))))
+
 (deftest test-save
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "save"
       (is (= {:label "a-1"} a))
       (is (= {:coll '({:label "a-1"}) :count 1} (rpm.advert/table))))))
+
+(deftest test-find-by-aux
+  (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
+    (testing "find-by-aux"
+      (is (= a (rpm.advert/find-by-aux (rpm.advert/all) :label "a-1"))))))
 
 (deftest test-find-by
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
@@ -47,6 +57,11 @@
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "count"
       (is (= 1 (rpm.advert/get-count))))))
+
+(deftest test-delete
+  (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
+    (testing "delete"
+      (is (= (rpm.advert/empty-table) (rpm.advert/delete (deref rpm.advert/db) a))))))
 
 (deftest test-destroy-by
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]

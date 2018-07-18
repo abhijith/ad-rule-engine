@@ -56,3 +56,18 @@
       (is (true? (rpm.category/destroy "cat-1")))
       (is (nil? (rpm.category/destroy "cat-2")))
       (is (empty? (rpm.category/all))))))
+
+(deftest test-save-aux
+  (let [a (rpm.category/save-aux (rpm.category/empty-table) (rpm.category/make "cat-1"))]
+    (testing "save"
+      (is (= {:coll '({:label "cat-1" :parent nil}) :count 1} a)))))
+
+(deftest test-find-by-aux
+  (let [a (rpm.category/save (rpm.category/make "cat-1"))]
+    (testing "find-by-aux"
+      (is (= a (rpm.category/find-by-aux (rpm.category/all) :label "cat-1"))))))
+
+(deftest test-delete
+  (let [a (rpm.category/save (rpm.category/make "cat-1"))]
+    (testing "delete"
+      (is (= (rpm.category/empty-table) (rpm.category/delete (deref rpm.category/db) a))))))

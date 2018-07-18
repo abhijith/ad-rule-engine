@@ -56,3 +56,18 @@
       (is (true? (rpm.channel/destroy "ch-1")))
       (is (nil? (rpm.channel/destroy "ch-2")))
       (is (empty? (rpm.channel/all))))))
+
+(deftest test-save-aux
+  (let [a (rpm.channel/save-aux (rpm.channel/empty-table) (rpm.channel/make "ch-1"))]
+    (testing "save"
+      (is (= {:coll '({:label "ch-1" :categories #{}}) :count 1} a)))))
+
+(deftest test-find-by-aux
+  (let [a (rpm.channel/save (rpm.channel/make "ch-1"))]
+    (testing "find-by-aux"
+      (is (= a (rpm.channel/find-by-aux (rpm.channel/all) :label "ch-1"))))))
+
+(deftest test-delete
+  (let [a (rpm.channel/save (rpm.channel/make "ch-1"))]
+    (testing "delete"
+      (is (= (rpm.channel/empty-table) (rpm.channel/delete (deref rpm.channel/db) a))))))

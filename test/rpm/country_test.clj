@@ -56,3 +56,18 @@
       (is (true? (rpm.country/destroy "country-1")))
       (is (nil? (rpm.country/destroy "country-2")))
       (is (empty? (rpm.country/all))))))
+
+(deftest test-save-aux
+  (let [a (rpm.country/save-aux (rpm.country/empty-table) (rpm.country/make "country-1"))]
+    (testing "save"
+      (is (= {:coll '({:label "country-1"}) :count 1} a)))))
+
+(deftest test-find-by-aux
+  (let [a (rpm.country/save (rpm.country/make "country-1"))]
+    (testing "find-by-aux"
+      (is (= a (rpm.country/find-by-aux (rpm.country/all) :label "country-1"))))))
+
+(deftest test-delete
+  (let [a (rpm.country/save (rpm.country/make "country-1"))]
+    (testing "delete"
+      (is (= (rpm.country/empty-table) (rpm.country/delete (deref rpm.country/db) a))))))
