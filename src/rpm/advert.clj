@@ -70,9 +70,11 @@
 
 (defn global-limit-exceeded? [ad] (limit-exceeded? (:global (limits ad))))
 
-(defn country-limit-exceeded? [ad country] (limit-exceeded? (get-in (limits ad) [:country country])))
+(defn exceeded? [ad k v] (limit-exceeded? (get-in (limits ad) [k v])))
 
-(defn channel-limit-exceeded? [ad channel] (limit-exceeded? (get-in (limits ad) [:channel channel])))
+(defn country-limit-exceeded? [ad c] (exceeded? ad :country c))
+
+(defn channel-limit-exceeded? [ad c] (exceeded? ad :channel c))
 
 (defn live [] (filter live? (all)))
 
