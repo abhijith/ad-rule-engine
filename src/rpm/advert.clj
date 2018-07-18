@@ -6,7 +6,11 @@
 (defn make-limit [n] {:limit n :views 0})
 
 (defn make
-  [label & {:keys [limits start end rule] :as m, :or {limits {:global (make-limit 1) :country {} :channel {} }}}]
+  [label & {:keys [limits start end rule]
+            :as m,
+            :or {limits {:global (make-limit 1)
+                         :country {}
+                         :channel {} }}}]
   (merge {:label label} m))
 
 (defn empty-table [] {:coll '() :count 0})
