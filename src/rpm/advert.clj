@@ -106,3 +106,10 @@
 (defn available
   [{:keys [channel country] :as m}]
   (filter (fn [ad] (available? ad m)) (all)))
+
+(defn inc-views
+  [ad {:keys [country channel]}]
+  (assoc ad :limits (-> (:limits ad)
+                        (update-in [:global :views] inc)
+                        (update-in [:country country :views] inc)
+                        (update-in [:channel channel :views] inc))))

@@ -44,7 +44,6 @@
 ;;      - for each available-ads (live and limits not exhausted)
 ;;
 ;;        -> evaluate constraints with categories, country, language filled in:
-;;
 ;;           => return the first ad found / based on ranking (inverse document frequency) + increment views (global and other limits)
 ;;
 ;;           => return nil

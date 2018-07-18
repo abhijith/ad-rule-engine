@@ -78,10 +78,10 @@
   (let [ch (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 0)}})
         co (rpm.advert/make :a :limits {:country {"india" (lim 1 0)}})
         gb (rpm.advert/make :a :limits {:global (lim 1 0)})]
-  (testing "limit"
-    (is (= {"a.com" (lim 1 0)} (rpm.advert/limit ch :channel)))
-    (is (= {"india" (lim 1 0)} (rpm.advert/limit co :country)))
-    (is (= (lim 1 0) (rpm.advert/limit gb :global))))))
+    (testing "limit"
+      (is (= {"a.com" (lim 1 0)} (rpm.advert/limit ch :channel)))
+      (is (= {"india" (lim 1 0)} (rpm.advert/limit co :country)))
+      (is (= (lim 1 0) (rpm.advert/limit gb :global))))))
 
 (defn sample-days []
   (let [now (java-time.local/local-date-time)]
@@ -189,14 +189,22 @@
 
 (deftest test-available
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
-        yes (rpm.advert/save (rpm.advert/make :a :start yest :end aft-tom
-                                              :limits {:channel {"a.com" (lim 1 0)}
-                                                       :country {"india" (lim 1 0)}
-                                                       :global  (lim 1 0)}))
-        no (rpm.advert/save (rpm.advert/make :a :start bef-yest :end yest
-                                             :limits {:channel {"a.com" (lim 1 1)}
-                                                      :country {"india" (lim 1 1)}
-                                                      :global (lim 1 1)}))]
-    (is (= 2 (rpm.advert/get-count)))
-    (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))
-    (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))))
+        [yes no] (avail)]
+    (do
+      (rpm.advert/save yes)
+      (rpm.advert/save no)
+      (testing "available"
+        (is (= 2 (rpm.advert/get-count)))
+        (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))
+        (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))))))
+
+(deftest test-inc-views
+  (let [ad (rpm.advert/make :a :limits {:channel {"a.com" (rpm.advert/make-limit 1)}
+                                        :country {"india" (rpm.advert/make-limit 1)}
+                                        :global (rpm.advert/make-limit 1)})
+        out {:label :a, :limits {:channel {"a.com" {:limit 1, :views 1}},
+                                 :country {"india" {:limit 1, :views 1}},
+                                 :global {:limit 1, :views 1}}}]
+    (rpm.advert/save ad)
+    (testing "inc-views"
+      (is (= out (rpm.advert/inc-views ad {:country "india" :channel "a.com"}))))))
