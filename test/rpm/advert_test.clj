@@ -135,11 +135,11 @@
 (defn exhausted
   []
   (let [yes (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 1)}
-                                    :country {"india" (lim 1 1)}
-                                    :global (lim 1 1)})
+                                         :country {"india" (lim 1 1)}
+                                         :global (lim 1 1)})
         no (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 0)}
-                                   :country {"india" (lim 1 0)}
-                                   :global (lim 1 0)})]
+                                        :country {"india" (lim 1 0)}
+                                        :global (lim 1 0)})]
     [(rpm.advert/save yes) (rpm.advert/save no)]))
 
 (deftest test-exhausted?
