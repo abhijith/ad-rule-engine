@@ -4,8 +4,6 @@
 
 (defn make [label & parent] {:label label :parent nil})
 
-(defn edit [e] :edit)
-
 (defn table [] (deref db))
 
 (defn all [] (:coll (deref db)))
