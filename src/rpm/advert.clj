@@ -10,7 +10,7 @@
             :as m,
             :or {limits {:global (make-limit 1)
                          :country {}
-                         :channel {} }}}]
+                         :channel {}}}}]
   (merge {:label label} m))
 
 (defn empty-table [] {:coll '() :count 0})

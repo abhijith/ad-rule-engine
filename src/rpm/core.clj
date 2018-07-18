@@ -6,7 +6,6 @@
             [rpm.country]
             [rpm.category]))
 
-
 (defroutes myapp
   (GET "/" [] "Show something")
   (POST "/" [] "Create something")

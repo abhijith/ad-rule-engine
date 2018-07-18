@@ -3,7 +3,7 @@
 (def db (atom {:coll '() :count 0}))
 
 (defn make
-  [label & {categories :categories :or {categories #{} }}]
+  [label & {categories :categories :or {categories #{}}}]
   {:label label :categories categories})
 
 (defn table [] (deref db))
