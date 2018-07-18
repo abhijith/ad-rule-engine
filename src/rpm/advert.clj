@@ -61,9 +61,9 @@
 
 (defn limits [ad] (:limits ad))
 
-(defn limit [ad type] (get-in [type :limit] (limits ad)))
+(defn limit [ad type] (type (limits ad)))
 
-(defn views [ad type] (get-in [type :views] (limits ad)))
+(defn views [ad type] (type (limits ad)))
 
 (defn live?
   [x]

@@ -66,6 +66,23 @@
   (testing "destroy"
     (is (= {:coll '() :count 0} (rpm.advert/destroy-all)))))
 
+(deftest test-limits
+  (let [l {:channel {"a.com" {:limit 1, :views 0}},
+           :country {"india" {:limit 1, :views 0}},
+           :global {:limit 1, :views 0}}
+        a (rpm.advert/make :a :limits l)]
+    (testing "limits"
+      (is (= l (rpm.advert/limits a))))))
+
+(deftest test-limit
+  (let [ch (rpm.advert/make :a :limits {:channel {"a.com" (lim 1 0)}})
+        co (rpm.advert/make :a :limits {:country {"india" (lim 1 0)}})
+        gb (rpm.advert/make :a :limits {:global (lim 1 0)})]
+  (testing "limit"
+    (is (= {"a.com" (lim 1 0)} (rpm.advert/limit ch :channel)))
+    (is (= {"india" (lim 1 0)} (rpm.advert/limit co :country)))
+    (is (= (lim 1 0) (rpm.advert/limit gb :global))))))
+
 (defn sample-days []
   (let [now (java-time.local/local-date-time)]
     {:now now
