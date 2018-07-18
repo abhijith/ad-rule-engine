@@ -30,7 +30,8 @@
 (deftest test-save
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
     (testing "save"
-      (is (= {:label "a-1"} a)))))
+      (is (= {:label "a-1"} a))
+      (is (= {:coll '({:label "a-1"}) :count 1} (rpm.advert/table))))))
 
 (deftest test-find-by
   (let [a (rpm.advert/save (rpm.advert/make "a-1"))]
