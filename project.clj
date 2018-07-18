@@ -8,7 +8,8 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [compojure "1.1.8"]
                  [http-kit "2.3.0-beta2"]
-                 [clojure.java-time "0.3.2"]]
+                 [clojure.java-time "0.3.2"]
+                 [org.clojure/data.json "0.2.6"]]
   :main ^:skip-aot rpm.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
