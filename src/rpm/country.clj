@@ -12,18 +12,17 @@
 
 (defn get-count [] (:count (deref db)))
 
-(defn find-by-aux [coll attr value]
+(defn find-by-aux
+  [coll attr value]
   (first (filter (fn [x] (= (attr x) value)) coll)))
 
-(defn find-by [attr value]
-  (find-by-aux (all) attr value))
+(defn find-by [attr value] (find-by-aux (all) attr value))
 
 (defn find-entry [label] (find-by :label label))
 
-(defn destroy-all []
-  (reset! db (empty-table)))
+(defn destroy-all [] (reset! db (empty-table)))
 
-(defn save-aux [db elem]
+(defn save-aux
   [db elem]
   (-> db
       (update :coll conj elem)
@@ -34,7 +33,8 @@
   (do (swap! db save-aux elem)
       elem))
 
-(defn delete [db elem]
+(defn delete
+  [db elem]
   (-> db
       (update :coll #(remove (constantly elem) %))
       (update :count dec)))
@@ -45,5 +45,4 @@
     (do (swap! db delete elem)
         true)))
 
-(defn destroy [label]
-  (destroy-by :label label))
+(defn destroy [label] (destroy-by :label label))

@@ -19,7 +19,7 @@
 
 (defn all [] (:coll (deref db)))
 
-(defn save-aux [db elem]
+(defn save-aux
   [db elem]
   (-> db
       (update :coll conj elem)

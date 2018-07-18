@@ -23,7 +23,7 @@
 (defn destroy-all []
   (reset! db {:coll '() :count 0}))
 
-(defn save-aux [db elem]
+(defn save-aux
   [db elem]
   (-> db
       (update :coll conj elem)

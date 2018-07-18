@@ -25,7 +25,7 @@
 (defn destroy-all []
   (reset! db (empty-table)))
 
-(defn save-aux [db elem]
+(defn save-aux
   [db elem]
   (-> db
       (update :coll conj elem)
