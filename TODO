@@ -346,3 +346,12 @@
   `(do ~@body))
 
 (cool (println :a))
+
+(doseq [x (range 1 10)]
+  (rpm.advert/save (rpm.advert/make x :limits {:channel {"a.com" {:limit 1, :views 1}},
+                              :country {"india" {:limit 1, :views 1}},
+                              :global {:limit 1, :views 1}})))
+
+(rpm.advert/destroy-all)
+
+(doseq [x (Integer/toString 10 2)] (println x))
