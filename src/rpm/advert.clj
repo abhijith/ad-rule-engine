@@ -107,9 +107,17 @@
   [{:keys [channel country] :as m}]
   (filter (fn [ad] (available? ad m)) (all)))
 
-(defn inc-views
+(defn edit-views
   [ad {:keys [country channel]}]
-  (assoc ad :limits (-> (:limits ad)
-                        (update-in [:global :views] inc)
-                        (update-in [:country country :views] inc)
-                        (update-in [:channel channel :views] inc))))
+  (let [paths [[:limits :global :views]
+               [:limits :country country :views]
+               [:limits :channel channel :views]]]
+    (reduce (fn [acc ks] (update-in acc ks inc)) ad paths)))
+
+(defn inc-views-aux
+  [coll ad {:keys [country channel]}]
+  (replace {ad (edit-views ad {:country country :channel channel})} coll))
+
+(defn inc-views
+  [ad {:keys [country channel] :as m}]
+  (swap! db assoc :coll (inc-views-aux (all) ad m)))

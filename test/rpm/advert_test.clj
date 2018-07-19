@@ -205,21 +205,43 @@
 (deftest test-available
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
         [yes no] (avail)]
-    (do
-      (rpm.advert/save yes)
-      (rpm.advert/save no)
-      (testing "available"
-        (is (= 2 (rpm.advert/get-count)))
-        (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))
-        (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))))))
+    (rpm.advert/save yes)
+    (rpm.advert/save no)
+    (testing "available"
+      (is (= 2 (rpm.advert/get-count)))
+      (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"}))))
+      (is (= 1 (count (rpm.advert/available {:country "india" :channel "a.com"})))))))
+
+(deftest test-edit-views
+  (let [in (rpm.advert/save (rpm.advert/make :a :limits {:channel {"a.com" {:limit 1, :views 0}},
+                                                        :country {"india" {:limit 1, :views 0}},
+                                                        :global {:limit 1, :views 0}}))
+        out (rpm.advert/limits (rpm.advert/edit-views in {:country "india" :channel "a.com"}))]
+    (println out)
+    (testing "edit-views"
+      (is (= 1 (get-in out [:global :views])))
+      (is (= 1 (get-in out [:country "india" :views])))
+      (is (= 1 (get-in out [:channel "a.com" :views]))))))
+
+(deftest test-inc-views-aux
+  (let [coll (for [x (range 1 10)] (rpm.advert/make x :limits {:channel {"a.com" {:limit 1, :views 0}},
+                                                               :country {"india" {:limit 1, :views 0}},
+                                                               :global {:limit 1, :views 0}}))
+        in (nth coll 2)
+        out (nth (rpm.advert/inc-views-aux coll in {:country "india" :channel "a.com"}) 2)]
+    (testing "inc-views-aux"
+      (is (= 1 (get-in out [:limits :global :views])))
+      (is (= 1 (get-in out [:limits :country "india" :views])))
+      (is (= 1 (get-in out [:limits :channel "a.com" :views]))))))
 
 (deftest test-inc-views
-  (let [ad (rpm.advert/make :a :limits {:channel {"a.com" (rpm.advert/make-limit 1)}
-                                        :country {"india" (rpm.advert/make-limit 1)}
-                                        :global (rpm.advert/make-limit 1)})
-        out {:label :a, :limits {:channel {"a.com" {:limit 1, :views 1}},
-                                 :country {"india" {:limit 1, :views 1}},
-                                 :global {:limit 1, :views 1}}}]
-    (rpm.advert/save ad)
-    (testing "inc-views"
-      (is (= out (rpm.advert/inc-views ad {:country "india" :channel "a.com"}))))))
+  (do (doseq [x (range 1 5)]
+        (rpm.advert/save (rpm.advert/make x :limits {:channel {"a.com" {:limit 1, :views 0}},
+                                                     :country {"india" {:limit 1, :views 0}},
+                                                     :global {:limit 1, :views 0}})))
+      (doseq [x (range 1 11)]
+        (rpm.advert/inc-views (first (rpm.advert/all)) {:country "india" :channel "a.com"})))
+  (testing "inc-views"
+    (is (= 10 (get-in (rpm.advert/views (first (rpm.advert/all)) :global) [:views])))
+    (is (= 10 (get-in (rpm.advert/views (first (rpm.advert/all)) :country) ["india" :views])))
+    (is (= 10 (get-in (rpm.advert/views (first (rpm.advert/all)) :channel) ["a.com" :views])))))
