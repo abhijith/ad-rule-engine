@@ -50,6 +50,12 @@
 
 ;; * On an average of 40 to 50 advertisements can be live at any point
 
+;; ad-views can be stored separately but would require transactional semantics (ad and views need to be treated as one unit)
+;; can probably use commute for view counter
+
+;; if views are contained within the hash easier to parallelize (pmap evaluate ads)
+;;
+
 ;;;; ideas
 
 (def req {:channel "team-bhp.com" :country "india" :language "english"})
