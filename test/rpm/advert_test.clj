@@ -217,7 +217,6 @@
                                                          :country {"india" {:limit 1, :views 0}},
                                                          :global {:limit 1, :views 0}}))
         out (rpm.advert/limits (rpm.advert/edit-views in {:country "india" :channel "a.com"}))]
-    (println out)
     (testing "edit-views"
       (is (= 1 (get-in out [:global :views])))
       (is (= 1 (get-in out [:country "india" :views])))
