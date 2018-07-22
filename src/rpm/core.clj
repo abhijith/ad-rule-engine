@@ -6,14 +6,6 @@
             [rpm.country]
             [rpm.category]))
 
-(defroutes myapp
-  (GET "/" [] "Show something")
-  (POST "/" [] "Create something"))
-
-;; rename this to -main to enable
-(defn main []
-  (run-server myapp {:port 5000}))
-
 (def ^:dynamic channel nil)
 (def ^:dynamic country nil)
 (def ^:dynamic language nil)
@@ -33,9 +25,11 @@
 (defn run
   [req]
   (let [{:keys [channel country language]} req]
-    (do
-      (when-let [ch (rpm.channel/find-entry channel)]
-        (when-let [co (rpm.country/find-entry country)]
-          (filter (fn [ad]
-                    (qualifies? (assoc req :categories (:categories ch)) (:rule ad)))
-                  (rpm.advert/available {:channel channel :country country})))))))
+    (filter (fn [ad]
+              (qualifies? (assoc req :categories (:categories channel)) (:rule ad)))
+            (rpm.advert/available {:channel channel :country country}))))
+
+(defn match [req]
+  (when-let [ad (first (run req))]
+    (rpm.advert/inc-views ad)
+    ad))

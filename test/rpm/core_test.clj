@@ -12,8 +12,6 @@
     (rpm.country/destroy-all)
     (rpm.category/destroy-all)))
 
-(use-fixtures :each (fn [f] (f) (reset-db)))
-
 (defn sample-days []
   (let [now (java-time.local/local-date-time)]
     {:now now
@@ -24,36 +22,52 @@
 
 (defn init []
   (let [{:keys [now yest tom bef-yest aft-tom]} (sample-days)
-        ch (rpm.channel/save (rpm.channel/make "team-bhp.com" :categories #{"bikes", "cars"}))
-        india (rpm.country/save (rpm.country/make "India"))
-        germany (rpm.country/save (rpm.country/make "Germany"))
-        ad1 (rpm.advert/save (rpm.advert/make "ktm" :start yest :end aft-tom
-                                              :limits {:channel {"team-bhp.com" {:limit 1 :views 0}}
-                                                       :country {"India" {:limit 1 :views 0}}
-                                                       :global {:limit 10 :views 0}}
-                                              :rule '(and (or (= rpm.core/language "English")
-                                                              (= rpm.core/language "Kannada"))
-                                                          (contains? rpm.core/categories "bikes")
-                                                          (= rpm.core/country "India")
-                                                          (= rpm.core/channel "team-bhp.com"))))
-        ad2 (rpm.advert/save (rpm.advert/make "yamaha" :start yest :end aft-tom
-                                              :limits {:channel {"team-bhp.com" {:limit 1 :views 0}}
-                                                       :country {"India" {:limit 1 :views 0}
-                                                                 "Germany" {:limit 9 :views 0}}
-                                                       :global {:limit 10 :views 0}}
-                                              :rule '(and (= rpm.core/language "German")
-                                                          (contains? rpm.core/categories "bikes")
-                                                          (= rpm.core/country "Germany")
-                                                          (= rpm.core/channel "team-bhp.com"))))]
+        r1 '(and (or (= rpm.core/language "English")
+                     (= rpm.core/language "Kannada"))
+                 (contains? rpm.core/categories "bikes")
+                 (= rpm.core/country "India")
+                 (= rpm.core/channel "team-bhp.com"))
+        r2 '(and (= rpm.core/language "German")
+                 (contains? rpm.core/categories "bikes")
+                 (= rpm.core/country "Germany")
+                 (= rpm.core/channel "team-bhp.com"))]
+
+    (rpm.channel/save (rpm.channel/make "team-bhp.com" :categories #{"bikes", "cars"}))
+    (rpm.country/save (rpm.country/make "India"))
+    (rpm.country/save (rpm.country/make "Germany"))
+
+    (rpm.advert/save (rpm.advert/make "ktm"
+                                      :start yest
+                                      :end aft-tom
+                                      :limits {:channel {"team-bhp.com" {:limit 1 :views 0}}
+                                               :country {"India" {:limit 1 :views 0}}
+                                               :global {:limit 10 :views 0}}
+                                      :rule r1))
+    (rpm.advert/save (rpm.advert/make "yamaha"
+                                      :start yest
+                                      :end aft-tom
+                                      :limits {:channel {"team-bhp.com" {:limit 1 :views 0}}
+                                               :country {"India" {:limit 1 :views 0}
+                                                         "Germany" {:limit 9 :views 0}}
+                                               :global {:limit 10 :views 0}}
+                                      :rule r2))
     :done))
 
-;; (do (reset-db) (init))
+(use-fixtures :each (fn [f] (init) (f) (reset-db) ))
 
 (deftest run
-  (init)
   (testing "run"
     (is (= 1 (count (rpm.core/run {:channel "team-bhp.com" :country "Germany" :language "German"}))))
     (is (= 0 (count (rpm.core/run {:channel "team-bhp.com" :country "Germany" :language "English"}))))
     (is (= 1 (count (rpm.core/run {:channel "team-bhp.com" :country "India" :language "English"}))))
     (is (= 1 (count (rpm.core/run {:channel "team-bhp.com" :country "India" :language "Kannada"}))))
     (is (= 0 (count (rpm.core/run {:channel "team-bhp.com" :country "India" :language "Hindi"}))))))
+
+(deftest match
+  (testing "run"
+    (rpm.core/match {:channel "team-bhp.com" :country "Germany" :language "German"})
+    (rpm.core/match {:channel "team-bhp.com" :country "India" :language "English"})
+    (rpm.core/match {:channel "team-bhp.com" :country "India" :language "Kannada"})
+    (is (= nil (rpm.core/match {:channel "team-bhp.com" :country "Germany" :language "German"})))
+    (is (= nil (rpm.core/match {:channel "team-bhp.com" :country "India" :language "English"})))
+    (is (= nil (rpm.core/match {:channel "team-bhp.com" :country "India" :language "Kannada"})))))
