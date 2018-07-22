@@ -30,36 +30,6 @@
   (let [{:keys [channel country language categories]} env]
     (with-bindings (bind env) (eval rule))))
 
-;;;; Match flow
-
-;; - extract channel from request
-;;
-;; - lookup channel in db:
-;;
-;;   => not-found -> return 404
-;;
-;;   => found
-;;      - extract categories and assoc to req
-;;
-;;      - for each available-ads (live and limits not exhausted)
-;;
-;;        -> evaluate constraints with categories, country, language filled in:
-;;           => return the first ad found / based on ranking (inverse document frequency) + increment views (global and other limits)
-;;
-;;           => return nil
-
-;;;; Ad-ranking strategies:
-;;
-;; - Ad-classes => platinum | gold | silver | bronze
-;;
-;; - maximum matches (IDF)
-;;
-;; - expr weightage => (and expr weight) => (and (isa? ::ktm ::bike) 10)
-;;
-;; - closest to expiry | exhaustion
-;;
-;; - high hit frequency
-
 (defn run
   [req]
   (let [{:keys [channel country language]} req]
