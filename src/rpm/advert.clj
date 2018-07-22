@@ -90,10 +90,9 @@
 
 (defn exhausted?
   [ad {:keys [channel country]}]
-  (and (global-limit-exceeded? ad)
-       (country-limit-exceeded? ad country)
-       (channel-limit-exceeded? ad channel)
-       true))
+  (or (global-limit-exceeded? ad)
+      (country-limit-exceeded? ad country)
+      (channel-limit-exceeded? ad channel)))
 
 (defn available?
   [ad {:keys [channel country] :as m}]

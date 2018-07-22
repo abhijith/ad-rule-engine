@@ -22,14 +22,14 @@
   (let [{:keys [channel country language categories]} env]
     (with-bindings (bind env) (eval rule))))
 
-(defn run
-  [req]
+(defn run [req]
   (let [{:keys [channel country language]} req]
-    (filter (fn [ad]
-              (qualifies? (assoc req :categories (:categories channel)) (:rule ad)))
-            (rpm.advert/available {:channel channel :country country}))))
+    (when-let [ch (rpm.channel/find-entry channel)]
+      (filter (fn [ad]
+                (qualifies? (assoc req :categories (:categories ch)) (:rule ad)))
+              (rpm.advert/available {:channel channel :country country})))))
 
 (defn match [req]
   (when-let [ad (first (run req))]
-    (rpm.advert/inc-views ad)
+    (rpm.advert/inc-views ad req)
     ad))

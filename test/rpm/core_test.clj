@@ -40,7 +40,8 @@
                                       :start yest
                                       :end aft-tom
                                       :limits {:channel {"team-bhp.com" {:limit 1 :views 0}}
-                                               :country {"India" {:limit 1 :views 0}}
+                                               :country {"India" {:limit 1 :views 0}
+                                                         "Germany" {:limit 1 :views 0}}
                                                :global {:limit 10 :views 0}}
                                       :rule r1))
     (rpm.advert/save (rpm.advert/make "yamaha"
@@ -48,8 +49,8 @@
                                       :end aft-tom
                                       :limits {:channel {"team-bhp.com" {:limit 1 :views 0}}
                                                :country {"India" {:limit 1 :views 0}
-                                                         "Germany" {:limit 9 :views 0}}
-                                               :global {:limit 10 :views 0}}
+                                                         "Germany" {:limit 1 :views 0}}
+                                               :global {:limit 1 :views 0}}
                                       :rule r2))
     :done))
 
