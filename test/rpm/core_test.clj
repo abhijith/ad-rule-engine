@@ -54,7 +54,7 @@
                                       :rule r2))
     :done))
 
-(use-fixtures :each (fn [f] (init) (f) (reset-db) ))
+(use-fixtures :each (fn [f] (init) (f) (reset-db)))
 
 (deftest run
   (testing "run"

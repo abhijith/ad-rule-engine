@@ -1,4 +1,8 @@
-#### Future scope
+#### Missing / Improvement areas
+
+* Error handling
+
+* Test scenarios and data generation (Exhaustive branch coverage)
 
 * Ad-ranking:
   - Ad-classes => platinum | gold | silver | bronze
@@ -12,13 +16,12 @@
 * core.spec
   - represent rule engine using spec
   - spec all fns
-  - property testing
+  - property testing reusing spec
 
 * Logging
   - json logging to make the log searchable
 
-* Algorithmic complexity of operations
-  - all operations on collections are O(n)
+* Persistent data store
 
 * Containerization
 

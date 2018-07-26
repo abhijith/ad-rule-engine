@@ -1,6 +1,7 @@
 * A request from a channel contains only 3 fields
 	- country (String)
 	- channel (String)
+	- language (String)
 
 * Categories:
 	- unique
@@ -27,3 +28,5 @@
 	- returns an advertisement given an advertisement id
 
 * On an average of 40 to 50 advertisements can be live at any point
+
+* Data stored in memory

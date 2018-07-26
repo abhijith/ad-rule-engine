@@ -360,4 +360,4 @@
 
 (rpm.advert/destroy-all)
 
-(doseq [x (Integer/toString 10 2)] (println x))
+(for [x (Integer/toString 10 2)] x)
