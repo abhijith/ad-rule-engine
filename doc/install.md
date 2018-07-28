@@ -5,7 +5,7 @@
 
 #### Cloning and installing the application
 
-	$ git clone
+	$ git clone git@github.com:abhijith/ad-rule-engine.git rpm
 	$ cd rpm
 	$ lein deps
 
