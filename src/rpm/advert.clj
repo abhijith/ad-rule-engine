@@ -1,7 +1,11 @@
 (ns rpm.advert
   (:require [java-time]))
 
-;; TODO: spec for all fns and entities
+;; TODO:
+;; * spec for all fns
+;; * spec for types
+;; * error handling
+;; * refactor and rename aux fns
 
 (def db (atom {:coll '() :count 0}))
 
@@ -129,22 +133,25 @@
     (>= (:views limit) (:limit limit))
     false))
 
-(defn global-limit-exceeded?
-  "Returns true if total ad views are >= limit given an ad"
-  [ad]
-  (limit-exceeded? (:global (limits ad))))
-
 (defn exceeded?
   "Returns true if ad views are >= limit, given an ad and attr->value"
   [ad type-attr type-value]
   (limit-exceeded? (get-in (limits ad) [type-attr type-value])))
 
+;;; TODO: replace with multi method
+(defn global-limit-exceeded?
+  "Returns true if total ad views are >= limit given an ad"
+  [ad]
+  (limit-exceeded? (:global (limits ad))))
+
+;;; TODO: replace with multi method
 (defn country-limit-exceeded?
   "Returns true if ad views are >= limit, given an ad and country
   label"
   [ad c]
   (exceeded? ad :country c))
 
+;;; TODO: replace with multi method
 (defn channel-limit-exceeded?
   "Returns true if ad views are >= limit, given an ad and channel
   label"

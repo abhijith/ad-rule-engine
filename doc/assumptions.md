@@ -1,3 +1,5 @@
+#### Assumptions
+
 * A request from a channel contains only 3 fields
 	- country (String)
 	- channel (String)

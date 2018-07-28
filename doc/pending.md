@@ -4,6 +4,8 @@
 
 * Test scenarios and data generation (Exhaustive branch coverage)
 
+* Eliminate repeated CRUD code
+
 * Ad-ranking:
   - Ad-classes => platinum | gold | silver | bronze
   - expr weightage => (and expr weight) => (and (isa? ::ktm ::bike) 10)
@@ -29,7 +31,7 @@
   - application metrics for analytics
   - jvm metrics
 
-* signal handling
+* Signal handling
   - graceful termination of process
   - config reload
   - control log level

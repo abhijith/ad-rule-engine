@@ -1,7 +1,7 @@
-#### Dependencies
+#### Environment
 
 * Leiningen 2.8.1
-* Java 9
+* Java 9 (OpenJDK)
 
 #### Cloning and installing the application
 
@@ -14,9 +14,11 @@
 * Starting the application
 
 		$ cd rpm
-		$ lein run
-		$ curl http://localhost:4567
+		$ lein run -m rpm.core
+		$ curl -X GET http://localhost:5000/ # hello
 
 * Tests
 
 		$ lein test
+
+* [API](api.md)

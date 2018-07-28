@@ -1,6 +1,6 @@
 (ns rpm.category)
 
-;; TODO support hierachies
+;; TODO support hierachies: isa?
 
 (def db (atom {:coll '() :count 0}))
 
