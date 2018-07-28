@@ -7,31 +7,31 @@
 * Eliminate repeated CRUD code
 
 * Ad-ranking:
-  - Ad-classes => platinum | gold | silver | bronze
-  - expr weightage => (and expr weight) => (and (isa? ::ktm ::bike) 10)
-  - closest to expiry | exhaustion
-  - hit frequency
+	- Ad-classes => platinum | gold | silver | bronze
+	- expr weightage => (and expr weight) => (and (isa? ::ktm ::bike) 10)
+	- closest to expiry | exhaustion
+	- hit frequency
 
 * Categories can be hierarchies | graphs
-  - ancestors, descendants, isa? operators
+	- ancestors, descendants, isa? operators
 
 * core.spec
-  - represent rule engine using spec
-  - spec all fns
-  - property testing reusing spec
+	- represent rule engine using spec
+	- spec all fns
+	- property testing reusing spec
 
 * Logging
-  - json logging to make the log searchable
+	- json logging to make the log searchable
 
 * Persistent data store
 
 * Containerization
 
 * Prometheus/metrics end-points
-  - application metrics for analytics
-  - jvm metrics
+	- application metrics for analytics
+	- jvm metrics
 
 * Signal handling
-  - graceful termination of process
-  - config reload
-  - control log level
+	- graceful termination of process
+	- config reload
+	- control log level

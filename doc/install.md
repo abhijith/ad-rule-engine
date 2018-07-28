@@ -5,7 +5,7 @@
 
 #### Cloning and installing the application
 
-	$ git clone
+	$ git clone git@bitbucket.org:redpineapplemedia/2018-06-26-abhijith-gopal.git rpm
 	$ cd rpm
 	$ lein deps
 

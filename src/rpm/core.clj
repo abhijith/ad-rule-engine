@@ -54,6 +54,9 @@
 ;; | /ads/:label | GET    | label                      | Gets the advertisement matching the label
 ;; | /ads/       | GET    | channel, country, language | returns a matching ad (if any)
 
+
+;; TODO: json response middleware
+;; json convertion of date-time not working.
 (defroutes app-routes
   (GET "/" [] "hello")
   (POST "/" [] (do (rpm.data/init-data) "done"))
