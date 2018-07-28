@@ -1,8 +1,8 @@
 (ns rpm.data
   (:require [rpm.advert]
             [rpm.channel]
-            [rpm.country]
-            [rpm.core]))
+            [rpm.category]
+            [rpm.country]))
 
 ;; | name         |live?| ad-limit | country-limit | channel-limit | constraints |
 ;; |:------------:|:---:|:--------:|:-------------:|:-------------:|:------------|

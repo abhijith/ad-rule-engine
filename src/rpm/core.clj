@@ -1,6 +1,10 @@
 (ns rpm.core
   (:require [compojure.core :refer :all]
             [org.httpkit.server :refer [run-server]]
+            [ring.middleware.defaults :refer :all]
+            [compojure.route :as route]
+            [ring.util.json-response :refer [json-response]]
+            [rpm.data]
             [rpm.advert]
             [rpm.channel]
             [rpm.country]
@@ -41,3 +45,22 @@
   [req]
   (when-let [ad (first (run req))]
     (rpm.advert/inc-views ad req)))
+
+;;; URLS
+
+;; | url         | type   | params                     | desc                                      |
+;; |:------------|:------:|:--------------------------:|:-----------------------------------------:|
+;; | /data       | POST   | None                       | Initializes sample data
+;; | /data       | DELETE | None                       | Clears the sample data
+;; | /ads/:label | GET    | label                      | Gets the advertisement matching the label
+;; | /ads/match  | GET    | channel, country, language | returns a matching ad (if any)
+
+(defroutes app-routes
+  (GET "/" [] "hello")
+  (POST "/data" [] (do (rpm.data/init-data) "done"))
+  (DELETE "/data" [] (do (rpm.data/reset-db) "done"))
+  (GET "/ads/:label" [label] (str (rpm.advert/find-entry label)))
+  (GET "/ad" req (str (match (select-keys (:params req) [:channel :country :language])))))
+
+(defn -main []
+  (run-server (wrap-defaults app-routes api-defaults) {:port 5000}))
