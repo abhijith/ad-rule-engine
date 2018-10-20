@@ -1,4 +1,7 @@
 (ns rpm.advert
+  (:require [clojure.spec.alpha :as s]
+            [clojure.spec.gen.alpha :as gen]
+            [clojure.spec.test.alpha :as stest])
   (:require [java-time]))
 
 ;; TODO:
@@ -7,12 +10,57 @@
 ;; * error handling
 ;; * refactor and rename aux fns
 
-(def db (atom {:coll '() :count 0}))
+(defn foo [n] (+ n 1))
+
+(s/fdef foo
+        :args #(println %) ; (s/cat :n pos-int?)
+        :ret #(println %))
+
+(stest/instrument `foo)
+(stest/instrument `make-limit)
+
+(def db (atom {::coll '() ::count 0}))
+
+(s/def ::count pos-int?)
+
+(s/def ::coll (s/coll-of ::advert))
+(s/def ::db (s/keys :req [::coll ::count]))
+
+(s/def ::label string?)
+(s/def ::start java-time.local/local-date-time?)
+(s/def ::end java-time.local/local-date-time?)
+
+(s/def ::limit pos-int?)
+(s/def ::views pos-int?)
+(s/def ::limit-type (s/keys :req [::limit ::views]))
+
+(s/def ::global-limit ::limit-type)
+(s/def ::channel-limit (s/map-of string? ::limit-type))
+(s/def ::country-limit (s/map-of string? ::limit-type))
+
+(gen/generate (s/gen ::global-limit))
+
+;; (s/valid? ::global-limit #:rpm.advert{:limit 1 :views 1})
+;; (s/valid? ::global-limit {::limit 1 ::views 1})
+
+(s/def ::advert (s/keys :req [::label] ::opt [::start ::end ::limits]))
+(s/def ::limits (s/keys :opt [::global-limit ::country-limit ::channel-limit]))
+
+(gen/generate (s/gen ::db))
+
+(s/fdef make-limit
+        :args (s/cat :n pos-int?)
+        :ret ::limit-type
+        :fn #(= (-> % :args :n)
+                (-> % :ret ::limit)))
+
+(s/fdef make-limit
+        :args (s/cat :n pos-int?))
 
 (defn make-limit
   "Takes a number and returns a map with limit type."
   [n]
-  {:limit n :views 0})
+  {::limit 1 ::view 0})
 
 (defn make
   "Takes a label, optional keyword args and creates an entity map."

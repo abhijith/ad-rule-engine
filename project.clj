@@ -11,6 +11,8 @@
                  [ring/ring-defaults "0.1.1"]
                  [clojure.java-time "0.3.2"]
                  [org.clojure/data.json "0.2.6"]]
+
   :main ^:skip-aot rpm.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev {:dependencies [[org.clojure/test.check "0.9.0"]]}})
